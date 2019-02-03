@@ -29,13 +29,15 @@ def full_path(json_file, abs_path):
 	data = []
 
 	# Augment to existing path
-	for k in range(len(entries)):
+	for entry in entries:
 
-		frame_a_path = abs_path + entries[k]['frame_a']
-		frame_b_path = abs_path + entries[k]['frame_b']
+		frame_a_path = abs_path + entry['frame_a']
+		frame_b_path = abs_path + entry['frame_b']
 
 		if path.isfile(frame_a_path) and path.isfile(frame_b_path):
-			data.append(entries[k])
+			entry['frame_a'] = frame_a_path
+			entry['frame_b'] = frame_b_path
+			data.append(entry)
 
 	# Write
 	out_file = open(json_file[:-5] + '_local.json', 'w')
