@@ -39,7 +39,7 @@ def full_path(json_file, abs_path):
 
 	# Write
 	out_file = open(json_file[:-5] + '_local.json', 'w')
-	json.dump(entries, out_file)
+	json.dump(data, out_file)
 	out_file.close()
 
 full_path('data/data_train.json', abs_path)
