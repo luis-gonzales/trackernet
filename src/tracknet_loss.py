@@ -15,7 +15,7 @@ def tracknet_loss(y_true, y_pred):
 
 
 	# Compute loss for bounding box params only where obj exists
-	lambda_coord = 5						# amplification parameter
+	lambda_coords = 5						# amplification parameter
 
 	obj_mask = tf.equal(y_true_conf, 1.0)
 	obj_mask = tf.tile(obj_mask, [1,1,4])	# repeat for four bbox params
