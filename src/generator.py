@@ -180,7 +180,7 @@ def generator(gen_entries, abs_path, batch_sz):
 	#print('num_entries =', num_entries)
 
 	while 1:
-		entries = shuffle(gen_entries)
+		entries = shuffle(gen_entries, random_state=0)
 
 		for offset in range(0, num_entries, batch_sz):
 			#print('--- new batch ---')
