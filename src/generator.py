@@ -194,7 +194,7 @@ def generator(gen_entries, abs_path, batch_sz):
 
 				entry['frame_a'] = abs_path + entry['frame_a']
 				entry['frame_b'] = abs_path + entry['frame_b']
-				#print(entry)
+				print(entry)
 
 				X_cur, y_cur = get_feat_and_label(entry)
 				imgs1.append(X_cur[0])
@@ -204,4 +204,6 @@ def generator(gen_entries, abs_path, batch_sz):
 
 
 			yield [np.array(imgs1), np.array(imgs2)], np.array(labels)
+
+
 
