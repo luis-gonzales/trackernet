@@ -194,7 +194,8 @@ def get_feat_and_label(dict_desc):
 	return [feat_a, feat_b], label
 
 
-def generator(gen_entries, batch_sz):
+
+def generator(gen_entries, abs_path, batch_sz):
 	#print('--- in generator ---')
 
 	num_entries = len(gen_entries)
@@ -213,6 +214,9 @@ def generator(gen_entries, batch_sz):
 				#print('######')
 				print(entry)
 				#print(k)
+
+				entry['frame_a'] = abs_path + entry['frame_a']
+				entry['frame_b'] = abs_path + entry['frame_b']
 
 				X_cur, y_cur = get_feat_and_label(entry)
 				imgs1.append(X_cur[0])
