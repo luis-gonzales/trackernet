@@ -51,32 +51,54 @@ def sigmoid(x):
 def inv_sigmoid(x):
 	#print('inv_sigmoid x =', x)
 	if (x == 0): return -999999
-	elif (x > 0.9998) and (x < 1.0002): return 999999
+	elif (x > 0.9998) or (x < 1.0002): return 999999
 	return np.log( x / (1-x) )
+
+def in_img(img_dims, bbox, min_pix=3):
+	img_w, img_h = img_dims
+	x,y,w,h = bbox
+	print('in_img =', x, y, w, h)
+
+	in_img = ( (x+w > min_pix) and (x < (img_w - min_pix)) ) \
+		 and ( (y+h > min_pix) and (y < (img_h - min_pix)) )
+
+	print('in_img =', in_img)
+	return in_img
+
 
 def anchor_parse(vals):
 	# vals is tuple w/ (x, y, w, h)
 	#print('--- in anchor_parse ---')
-	x, y, w, h = vals
-	#print(x,y,w,h)
-
-	in_frame = (y < 192) and (x < 192) and (x+w > 0) and (y+h > 0)
-	##print('in_frame =', in_frame)
-
-	if not in_frame:
+	if not in_img((192,192), vals):
 		print('outside of 192 x 192 crop')
 		return -1, (0,0,0,0)
+
+	x, y, w, h = vals
+	print(x,y,w,h)
+
+	#in_frame = (y < 192) and (x < 192) and (x+w > 0) and (y+h > 0)
+	##print('in_frame =', in_frame)
+
+	#if not in_frame:
+		
 
 	if y+h > 192:
 		h = 192 - y
 	if x+w > 192:
 		w = 192 - x
+	if x < 0:
+		w = w + x
+		x = 0
+	if y < 0:
+		h = h + y
+		y = 0
+	print('new bbox =', x, y, w, h)
 
 	center_x, center_y = round(x + w/2), round(y + h/2)
 
 	#if center_y > 192: center_y = 192
 
-	##print('center =', center_x, center_y)
+	print('center =', center_x, center_y)
 
 	x_idx, y_idx = center_x // 64, center_y // 64
 	##print('idx =', x_idx, y_idx)
@@ -86,13 +108,9 @@ def anchor_parse(vals):
 
 	b_x = (center_x % 64) / 64
 	b_y = (center_y % 64) / 64
-	##print('bx, by =', b_x, b_y)
 
 	t_x = inv_sigmoid(b_x)
 	t_y = inv_sigmoid(b_y)
-
-	##print( sigmoid(t_x) )
-	##print( sigmoid(t_y) )
 
 	#print('b_x, b_y =', b_x, b_y)
 	#print('t_x, t_y =', t_x, t_y)
@@ -104,6 +122,8 @@ def anchor_parse(vals):
 	#print('recovered w and h =', 144*np.exp(tw), 144*np.exp(th))
 
 	return idx, (t_x, t_y, tw, th)
+
+
 
 
 def get_feat_and_label(dict_desc):
@@ -146,19 +166,20 @@ def get_feat_and_label(dict_desc):
 
 	label = np.zeros((9,5), dtype=np.float32)
 
-	##cv2.imwrite('feat_a.jpg', feat_a[:,:,::-1]*255)
-	##cv2.imwrite('feat_b.jpg', feat_b[:,:,::-1]*255)
+	cv2.imwrite('feat_a.jpg', feat_a[:,:,::-1]*255)
+	cv2.imwrite('feat_b.jpg', feat_b[:,:,::-1]*255)
 
 
 
-	if 'bbox_b' in dict_desc:
+	if ('bbox_b' in dict_desc):
 		#print('bbox_b exists!')
 		x_b, y_b, w_b, h_b = dict_desc['bbox_b']
 
 		x = round((x_b - x_orig)*ratio_b)
 		y = round((y_b - y_orig)*ratio_b)
 		w, h = round(w_b*ratio_b), round(h_b*ratio_b)
-		##print('new params =', x, y, w, h)
+		print(x, y, w, h)
+
 		idx, vals = anchor_parse((x, y, w, h))
 
 		if idx != -1:
@@ -173,14 +194,14 @@ def get_feat_and_label(dict_desc):
 	return [feat_a, feat_b], label
 
 
-def generator(gen_entries, abs_path, batch_sz):
+def generator(gen_entries, batch_sz):
 	#print('--- in generator ---')
 
 	num_entries = len(gen_entries)
 	#print('num_entries =', num_entries)
 
 	while 1:
-		entries = shuffle(gen_entries, random_state=0)
+		entries = shuffle(gen_entries)
 
 		for offset in range(0, num_entries, batch_sz):
 			#print('--- new batch ---')
@@ -190,11 +211,8 @@ def generator(gen_entries, abs_path, batch_sz):
 
 			for k, entry in enumerate(batch_entries):
 				#print('######')
-				#print(k)
-
-				entry['frame_a'] = abs_path + entry['frame_a']
-				entry['frame_b'] = abs_path + entry['frame_b']
 				print(entry)
+				#print(k)
 
 				X_cur, y_cur = get_feat_and_label(entry)
 				imgs1.append(X_cur[0])
@@ -204,6 +222,4 @@ def generator(gen_entries, abs_path, batch_sz):
 
 
 			yield [np.array(imgs1), np.array(imgs2)], np.array(labels)
-
-
 
