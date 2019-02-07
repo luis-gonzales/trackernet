@@ -51,18 +51,18 @@ def sigmoid(x):
 def inv_sigmoid(x):
 	#print('inv_sigmoid x =', x)
 	if (x == 0): return -999999
-	elif (x > 0.9998) or (x < 1.0002): return 999999
+	elif (x > 0.9998) and (x < 1.0002): return 999999
 	return np.log( x / (1-x) )
 
 def in_img(img_dims, bbox, min_pix=3):
 	img_w, img_h = img_dims
 	x,y,w,h = bbox
-	print('in_img =', x, y, w, h)
+	#print('in_img =', x, y, w, h)
 
 	in_img = ( (x+w > min_pix) and (x < (img_w - min_pix)) ) \
 		 and ( (y+h > min_pix) and (y < (img_h - min_pix)) )
 
-	print('in_img =', in_img)
+	#print('in_img =', in_img)
 	return in_img
 
 
@@ -70,11 +70,11 @@ def anchor_parse(vals):
 	# vals is tuple w/ (x, y, w, h)
 	#print('--- in anchor_parse ---')
 	if not in_img((192,192), vals):
-		print('outside of 192 x 192 crop')
+		#print('outside of 192 x 192 crop')
 		return -1, (0,0,0,0)
 
 	x, y, w, h = vals
-	print(x,y,w,h)
+	#print(x,y,w,h)
 
 	#in_frame = (y < 192) and (x < 192) and (x+w > 0) and (y+h > 0)
 	##print('in_frame =', in_frame)
@@ -92,13 +92,13 @@ def anchor_parse(vals):
 	if y < 0:
 		h = h + y
 		y = 0
-	print('new bbox =', x, y, w, h)
+	#print('new bbox =', x, y, w, h)
 
 	center_x, center_y = round(x + w/2), round(y + h/2)
 
 	#if center_y > 192: center_y = 192
 
-	print('center =', center_x, center_y)
+	#print('center =', center_x, center_y)
 
 	x_idx, y_idx = center_x // 64, center_y // 64
 	##print('idx =', x_idx, y_idx)
@@ -134,6 +134,8 @@ def get_feat_and_label(dict_desc):
 
 	path_a = dict_desc['frame_a']
 	path_b = dict_desc['frame_b']
+
+	#print('path_a =', path_a)
 
 	img_a = cv2.imread(path_a)
 
@@ -178,7 +180,7 @@ def get_feat_and_label(dict_desc):
 		x = round((x_b - x_orig)*ratio_b)
 		y = round((y_b - y_orig)*ratio_b)
 		w, h = round(w_b*ratio_b), round(h_b*ratio_b)
-		print(x, y, w, h)
+		#print(x, y, w, h)
 
 		idx, vals = anchor_parse((x, y, w, h))
 
@@ -192,6 +194,7 @@ def get_feat_and_label(dict_desc):
 	
 
 	return [feat_a, feat_b], label
+
 
 
 
@@ -212,13 +215,22 @@ def generator(gen_entries, abs_path, batch_sz):
 
 			for k, entry in enumerate(batch_entries):
 				#print('######')
-				print(entry)
 				#print(k)
+				#print('original entry =\n', entry)
+				
 
-				entry['frame_a'] = abs_path + entry['frame_a']
-				entry['frame_b'] = abs_path + entry['frame_b']
+				#entry['frame_a'] = abs_path + entry['frame_a']
+				#entry['frame_b'] = abs_path + entry['frame_b']
+				#print('appended frame paths =')
+				#print(entry['frame_a'])
+				#print(entry['frame_b'])
 
-				X_cur, y_cur = get_feat_and_label(entry)
+				new_entry = {'frame_a': abs_path + entry['frame_a'],
+							 'frame_b': abs_path + entry['frame_b'],
+							 'bbox_a': entry['bbox_a'],
+							 'bbox_b': entry['bbox_b']}
+
+				X_cur, y_cur = get_feat_and_label(new_entry)
 				imgs1.append(X_cur[0])
 				imgs2.append(X_cur[1])
 				labels.append(y_cur)
