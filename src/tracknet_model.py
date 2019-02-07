@@ -276,6 +276,7 @@ def build_model(cfg_file):
 	'''
 
 
+
 	t_act_maps = []
 	for idx, layer in enumerate(cfg_blocks[1:]):
 		print('-------\nLayer:', idx)
@@ -296,11 +297,32 @@ def build_model(cfg_file):
 		t_act_maps.append(x_t)
 	print('---')
 
+	t_list = []
 	t_conv_dict = {'batch_normalize': '1', 'filters': '1024', 'size': '3',
 				   'stride': '2', 'activation': 'leaky'}
 	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
 			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_5')
 	print(x_t)
+	t_list.append(x_t)
+
+
+	t_conv_dict = {'batch_normalize': '1', 'filters': '512', 'size': '3',
+				   'stride': '1', 'activation': 'leaky'}
+	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
+			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_6')
+	print(x_t)
+	t_list.append(x_t)
+
+
+	t_conv_dict = {'batch_normalize': '1', 'filters': '1024', 'size': '3',
+				   'stride': '1', 'activation': 'leaky'}
+	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
+			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_7')
+	print(x_t)
+	t_list.append(x_t)
+
+	x_t = tf.keras.layers.add([x_t, t_list[-3]], name='last')
+
 
 
 	print('\nMerge')
