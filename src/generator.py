@@ -45,14 +45,20 @@ def extract_mult(img, bbox, mult):
 
 	return img[y1:y2, x1:x2, :], (x1,y1)
 
+
 def sigmoid(x):
 	return 1 / (1 + np.exp(-x))
 
 def inv_sigmoid(x):
 	#print('inv_sigmoid x =', x)
-	if (x == 0): return -999999
-	elif (x > 0.9998) and (x < 1.0002): return 999999
-	return np.log( x / (1-x) )
+	lim = 4
+	if (x == 0): return -lim
+	elif (x > 0.9998) and (x < 1.0002): return lim
+	ans = np.log( x / (1-x) )
+
+	if ans > lim: return lim
+	elif ans < -lim: return -lim
+	else: return ans
 
 def in_img(img_dims, bbox, min_pix=3):
 	img_w, img_h = img_dims
@@ -125,7 +131,6 @@ def anchor_parse(vals):
 
 
 
-
 def get_feat_and_label(dict_desc):
 	# t-1: 144 x 144     96 x  96
 	# t:   288 x 288    192 x 192
@@ -168,8 +173,8 @@ def get_feat_and_label(dict_desc):
 
 	label = np.zeros((9,5), dtype=np.float32)
 
-	cv2.imwrite('feat_a.jpg', feat_a[:,:,::-1]*255)
-	cv2.imwrite('feat_b.jpg', feat_b[:,:,::-1]*255)
+	#cv2.imwrite('feat_a.jpg', feat_a[:,:,::-1]*255)
+	#cv2.imwrite('feat_b.jpg', feat_b[:,:,::-1]*255)
 
 
 
@@ -180,7 +185,7 @@ def get_feat_and_label(dict_desc):
 		x = round((x_b - x_orig)*ratio_b)
 		y = round((y_b - y_orig)*ratio_b)
 		w, h = round(w_b*ratio_b), round(h_b*ratio_b)
-		#print(x, y, w, h)
+		#print('new bbox', x, y, w, h)
 
 		idx, vals = anchor_parse((x, y, w, h))
 

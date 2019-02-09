@@ -4,6 +4,7 @@ import argparse
 from os import path
 
 '''
+
 Command-line arg:
 	abs_path: Absolute path to dataset (<abs>/TrackingNet-devkit/)
 '''
@@ -13,6 +14,7 @@ abs_path = sys.argv[1]
 
 if abs_path[-1] != '/':
 	abs_path = abs_path + '/'
+
 
 
 # Helper that prepends absolute path to frame paths

@@ -1,7 +1,9 @@
+import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
+
 
 
 def parse_cfg(cfg_file):
@@ -91,7 +93,7 @@ def conv(x, dict_desc, bn_momentum, bn_epsilon, relu_alpha, post_name,
 
 	return x
 
-
+'''
 def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post_name,
 				conv_trainable=True, bn_trainable=True):
 
@@ -102,6 +104,7 @@ def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post
 			 relu_alpha=relu_alpha, post_name=post_name)
 
 	return Model(inputs=inp, outputs=x, name='conv_obj'+post_name)
+'''
 
 
 
@@ -109,11 +112,10 @@ def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post
 
 
 
+def build_model(cfg_head, cfg_tail):
 
-def build_model(cfg_file):
-
-	cfg_blocks = parse_cfg(cfg_file)
-	print('cfg_blocks =\n', cfg_blocks)
+	cfg_blocks = parse_cfg(cfg_head)
+	#print('cfg_blocks =\n', cfg_blocks)
 	net = cfg_blocks[0]
 
 
@@ -136,218 +138,156 @@ def build_model(cfg_file):
 	x_t_m1 = input_t_m1
 	x_t    = input_t
 
+	# Operations from YOLO
+	t_m1_stop_layer = 12
 
-	# Shared conv operation
-	shared_conv_0_dict = {'batch_normalize': '1', 'filters': '16', 'size': '3',
-						  'stride': '1', 'activation': 'leaky'}
-	shared_conv_0 = conv_object(shared_conv_0_dict, prev_depth=3, bn_momentum=bn_momentum,
-								bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-								post_name='_shared_conv_0',
-								conv_trainable=True, bn_trainable=True)
-	x_t_m1 = shared_conv_0(x_t_m1)
-	x_t    = shared_conv_0(x_t)
-
-	print('Shared conv:')
-	print(x_t_m1)
-	print(x_t)
-
-
-
+	t_act_maps    = []
 	t_m1_act_maps = []
-	for idx, layer in enumerate(cfg_blocks[1:]):
-		print('-------\nLayer:', idx)
-		print('layer[type] =', layer['type'])
 
-		if layer['type'] == 'convolutional':
-			x_t_m1 = conv(x_t_m1, layer, bn_momentum=bn_momentum,
-						  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-						  post_name='_conv_t_m1_' + str(idx))
-			print(x_t_m1)
-
-		elif layer['type'] == 'shortcut':
-			shortcut_name = 'res_t_m1_' + str(idx)
-			from_ = int(layer['from'])
-			x_t_m1 = tf.keras.layers.add([x_t_m1, t_m1_act_maps[from_]], name=shortcut_name)
-			print(x_t_m1)
-
-		t_m1_act_maps.append(x_t_m1)
-
-	'''
-	print('\nConvs for frame t-1')
-	# Conv operations for frame t-1
-	t_m1_conv_dict = {'batch_norm': True, 'filters': 32, 'size': 3,
-					  'stride': 2, 'activation': 'leaky'}
-	x_t_m1 = conv(x_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-				  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_0')
-	print(x_t_m1)
-
-	#t_m1_conv_dict = {'batch_norm': True, 'filters': 16, 'size': 1,
-	#				  'stride': 1, 'activation': 'leaky'}
-	#x1_t_m1 = conv(x0_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-	#			  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_1')
-	#print(x1_t_m1)
-
-	#t_m1_conv_dict = {'batch_norm': True, 'filters': 32, 'size': 3,
-	#				  'stride': 1, 'activation': 'leaky'}
-	#x2_t_m1 = conv(x1_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-	#			  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_2')
-	#print(x2_t_m1)
-
-	#x_t_m1 = tf.keras.layers.add([x0_t_m1, x2_t_m1])
-	#print(x_t_m1)
-
-
-
-	t_m1_conv_dict = {'batch_norm': True, 'filters': 64, 'size': 3,
-					  'stride': 2, 'activation': 'leaky'}
-	x_t_m1 = conv(x_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-				  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_1')
-	print(x_t_m1)
-
-	#t_m1_conv_dict = {'batch_norm': True, 'filters': 32, 'size': 1,
-	#				  'stride': 1, 'activation': 'leaky'}
-	#x4_t_m1 = conv(x3_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-	#			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_4')
-	#print(x4_t_m1)
-
-	#t_m1_conv_dict = {'batch_norm': True, 'filters': 64, 'size': 3,
-	#				  'stride': 1, 'activation': 'leaky'}
-	#x5_t_m1 = conv(x4_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-	#			  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_5')
-	#print(x5_t_m1)
-
-	#x_t_m1 = tf.keras.layers.add([x3_t_m1, x5_t_m1])
-	#print(x_t_m1)
-
-
-	t_m1_conv_dict = {'batch_norm': True, 'filters': 128, 'size': 3,
-					  'stride': 2, 'activation': 'leaky'}
-	x_t_m1 = conv(x_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-				  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_2')
-	print(x_t_m1)
-
-	t_m1_conv_dict = {'batch_norm': True, 'filters': 256, 'size': 3,
-					  'stride': 2, 'activation': 'leaky'}
-	x_t_m1 = conv(x_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-				  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_3')
-	print(x_t_m1)
-
-	t_m1_conv_dict = {'batch_norm': True, 'filters': 512, 'size': 3,
-					  'stride': 2, 'activation': 'leaky'}
-	x_t_m1 = conv(x_t_m1, t_m1_conv_dict, bn_momentum=bn_momentum,
-				  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_m1_4')
-	print(x_t_m1)
-	'''
-
-
-
-	print('\nConvs for frame t')
-	# Conv operations for frame t
-	'''
-	t_conv_dict = {'batch_norm': True, 'filters': 32, 'size': 3,
-				   'stride': 2, 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_0')
-	print(x_t)
-
-	t_conv_dict = {'batch_norm': True, 'filters': 64, 'size': 3,
-				   'stride': 2, 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_1')
-	print(x_t)
-
-	t_conv_dict = {'batch_norm': True, 'filters': 128, 'size': 3,
-				   'stride': 2, 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_2')
-	print(x_t)
-
-	t_conv_dict = {'batch_norm': True, 'filters': 256, 'size': 3,
-				   'stride': 2, 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_3')
-	print(x_t)
-
-	t_conv_dict = {'batch_norm': True, 'filters': 512, 'size': 3,
-				   'stride': 2, 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_4')
-	print(x_t)
-	'''
-
-
-
-	t_act_maps = []
 	for idx, layer in enumerate(cfg_blocks[1:]):
 		print('-------\nLayer:', idx)
 		print('layer[type] =', layer['type'])
 
 		if layer['type'] == 'convolutional':
 			x_t = conv(x_t, layer, bn_momentum=bn_momentum,
-						  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-						  post_name='_conv_t_' + str(idx))
-			print(x_t)
+					   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
+					   post_name='_t_' + str(idx), conv_trainable=False, bn_trainable=False)
+			#print('x_t:', x_t)
+			
+			if idx < t_m1_stop_layer:
+				x_t_m1 = conv(x_t_m1, layer, bn_momentum=bn_momentum,
+						  	  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
+							  post_name='_t_m1_' + str(idx), conv_trainable=False, bn_trainable=False)
+				#print('x_t-1:', x_t_m1)
 
 		elif layer['type'] == 'shortcut':
 			shortcut_name = 'res_t_' + str(idx)
 			from_ = int(layer['from'])
 			x_t = tf.keras.layers.add([x_t, t_act_maps[from_]], name=shortcut_name)
-			print(x_t)
+			#print('x_t:', x_t)
 
+			if idx < t_m1_stop_layer:
+				shortcut_name = 'res_t_m1_' + str(idx)
+				from_ = int(layer['from'])
+				x_t_m1 = tf.keras.layers.add([x_t_m1, t_m1_act_maps[from_]], name=shortcut_name)
+				#print('x_t-1:', x_t_m1)
+
+		t_m1_act_maps.append(x_t_m1)
 		t_act_maps.append(x_t)
-	print('---')
-
-	t_list = []
-	t_conv_dict = {'batch_normalize': '1', 'filters': '1024', 'size': '3',
-				   'stride': '2', 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_5')
-	print(x_t)
-	t_list.append(x_t)
-
-
-	t_conv_dict = {'batch_normalize': '1', 'filters': '512', 'size': '3',
-				   'stride': '1', 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_6')
-	print(x_t)
-	t_list.append(x_t)
-
-
-	t_conv_dict = {'batch_normalize': '1', 'filters': '1024', 'size': '3',
-				   'stride': '1', 'activation': 'leaky'}
-	x_t = conv(x_t, t_conv_dict, bn_momentum=bn_momentum,
-			   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_t_7')
-	print(x_t)
-	t_list.append(x_t)
-
-	x_t = tf.keras.layers.add([x_t, t_list[-3]], name='last')
 
 
 
-	print('\nMerge')
+
+	cfg_blocks_last = parse_cfg(cfg_tail)
+	
+
+	
+	
 	# Merge and perform final convolutions
+	print('\n\nOperations for merge:')
 	x = tf.keras.layers.concatenate([x_t_m1, x_t])	# [?, 3, 3, 1536]
 	print(x)
 
+	print('cfg_blocks_last =', cfg_blocks_last)
 
-	conv_dict = {'batch_normalize': '1', 'filters': '128', 'size': '1',
-				   'stride': '1', 'activation': 'leaky'}
-	x = conv(x, conv_dict, bn_momentum=bn_momentum,
-			 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_0')
-	print(x)
+	x_act_maps = []
+	for idx, layer in enumerate(cfg_blocks_last):
+		print('-------\nLayer:', idx)
+		print('layer[type] =', layer['type'])
+
+		if layer['type'] == 'convolutional':
+			x = conv(x, layer, bn_momentum=bn_momentum,
+						  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
+						  post_name='_x_' + str(idx))
+			print(x)
+
+		elif layer['type'] == 'shortcut':
+			shortcut_name = 'res_x_' + str(idx)
+			from_ = int(layer['from'])
+			x = tf.keras.layers.add([x, x_act_maps[from_]], name=shortcut_name)
+			print(x)
+
+		x_act_maps.append(x)
+	print('---')
 
 
-	conv_dict = {'batch_normalize': '0', 'filters': '5', 'size': '1',
-				   'stride': '1', 'activation': 'linear'}
-	x = conv(x, conv_dict, bn_momentum=bn_momentum,
-			 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_1')
-	print(x)
+
+	#conv_dict = {'batch_normalize': '1', 'filters': '128', 'size': '1',
+	#			   'stride': '1', 'activation': 'leaky'}
+	#x = conv(x, conv_dict, bn_momentum=bn_momentum,
+	#		 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_0')
+	#print(x)
+
+
+	#conv_dict = {'batch_normalize': '0', 'filters': '5', 'size': '1',
+	#			   'stride': '1', 'activation': 'linear'}
+	#x = conv(x, conv_dict, bn_momentum=bn_momentum,
+	#		 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_1')
+	#print(x)
 
 
 	x = ReshapeLayer()(x)
 	print(x)
 
-	return Model(inputs=[input_t_m1, input_t], outputs=x), net
+	return Model(inputs=[input_t_m1, input_t], outputs=x), cfg_blocks
+
+
+def load_weights(weights_file, model, blocks):
+	print('Setting weights...')
+	file = open(weights_file, 'r')
+
+	# Skip header info including major, minor, and subversion numbers, and training data seen
+	header = np.fromfile(file, dtype=np.int32, count=5)
+
+	for idx, layer in enumerate(blocks):
+		#print('layer info:', idx, layer)
+
+		if layer['type'] == 'convolutional':
+			#print('in conv')
+
+			#print( model.get_layer('conv_t_0').get_weights )
+			#print( type(model.get_layer('conv_t_0').get_weights()) )
+			#print( len(model.get_layer('conv_t_0').get_weights()) )
+			conv_name = 'conv_t_' + str(idx)
+
+			bias_weights = []
+			size, _, channels, filters = model.get_layer(conv_name).get_weights()[0].shape
+			#print(size, channels, filters)
+
+			if ('batch_normalize' in layer):
+				betas        = np.fromfile(file, dtype=np.float32, count=filters)
+				gammas       = np.fromfile(file, dtype=np.float32, count=filters)
+				moving_means = np.fromfile(file, dtype=np.float32, count=filters)
+				moving_vars  = np.fromfile(file, dtype=np.float32, count=filters)
+
+				bn_name = 'bn_t_' + str(idx)
+				model.get_layer(bn_name).set_weights([gammas, betas, moving_means, moving_vars])
+
+				if idx < 12:
+					bn_name_2 = 'bn_t_m1_' + str(idx)
+					model.get_layer(bn_name_2).set_weights([gammas, betas, moving_means, moving_vars])
+
+			else:
+				biases = np.fromfile(file, dtype=np.float32, count=filters)
+				bias_weights.append(biases)
+
+			conv_weights = np.fromfile(file, dtype=np.float32, count=size*size*channels*filters)
+				
+			#conv_weights = np.reshape(conv_weights, [filters, channels, size, size])
+			#conv_weights = [np.transpose(conv_weights, (2,3,1,0))]
+
+			conv_weights = np.reshape(conv_weights, newshape=(-1,filters), order='F')
+			conv_weights = np.reshape(conv_weights, newshape=(-1, channels, filters), order='F')
+			conv_weights = [np.reshape(conv_weights, newshape=(size,size,channels,filters), order='C')]
+
+			model.get_layer(conv_name).set_weights(conv_weights + bias_weights)
+
+			if idx < 12:
+				conv_name_2 = 'conv_t_m1_' + str(idx)
+				model.get_layer(conv_name_2).set_weights(conv_weights + bias_weights)
+
+	file.close()
+	print('Done!')
+	return model
 
 
