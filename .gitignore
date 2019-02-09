@@ -4,3 +4,4 @@ data/data_val_local.json
 data/data_test_local.json
 src/__pycache__/
 nohup*
+yolov3.weights
