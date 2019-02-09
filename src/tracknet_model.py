@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Input, Lambda
 
 
 
@@ -39,9 +39,11 @@ def parse_cfg(cfg_file):
 class ReshapeLayer(tf.keras.layers.Layer):
 
 	def __init__(self):
+		print('in __init__')
 		super(ReshapeLayer, self).__init__()
 
 	def call(self, inputs):
+		print('in call')
 		h, w = inputs.get_shape()[1:3]
 		return tf.reshape(inputs, [-1, h*w, 5])
 
@@ -107,7 +109,8 @@ def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post
 '''
 
 
-
+def divide(x):
+	return tf.divide(x, 255)
 
 
 
@@ -138,8 +141,10 @@ def build_model(cfg_head, cfg_tail):
 					   dtype=tf.float32, name='input_t_m1')
 	input_t    = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
 					   dtype=tf.float32, name='input_t')
-	x_t_m1 = tf.divide(input_t_m1, 255) #input_t_m1
-	x_t    = tf.divide(input_t, 255)  #input_t
+	#x_t_m1 = input_t_m1 #tf.divide(input_t_m1, 255) #
+	#x_t    = input_t # tf.divide(input_t, 255)  #
+	x_t_m1 = Lambda(divide)(input_t_m1)
+	x_t   = Lambda(divide)(input_t)
 
 	# Operations from YOLO
 	t_m1_stop_layer = t_m1_ops_stop
@@ -215,24 +220,15 @@ def build_model(cfg_head, cfg_tail):
 
 
 
-	#conv_dict = {'batch_normalize': '1', 'filters': '128', 'size': '1',
-	#			   'stride': '1', 'activation': 'leaky'}
-	#x = conv(x, conv_dict, bn_momentum=bn_momentum,
-	#		 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_0')
-	#print(x)
 
-
-	#conv_dict = {'batch_normalize': '0', 'filters': '5', 'size': '1',
-	#			   'stride': '1', 'activation': 'linear'}
-	#x = conv(x, conv_dict, bn_momentum=bn_momentum,
-	#		 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha, post_name='_post_merge_1')
-	#print(x)
-
-
+	print('about to reshape')
 	x = ReshapeLayer()(x)
 	print(x)
+	print('reshape done')
 
 	return Model(inputs=[input_t_m1, input_t], outputs=x), cfg_blocks
+
+
 
 
 def load_weights(weights_file, model, blocks):
