@@ -10,9 +10,8 @@ from tracknet_loss import tracknet_loss
 
 
 # DETERMINE WHERE TO PLACE RANDOM SEED!!!
-# CFG IS NOT OPTIONAL!
-# Divide by 255 in tensorflow!
 
+# Parse config files (head and tail:q)
 parser = argparse.ArgumentParser()
 parser.add_argument('cfg_front', help='config file for front of CNN', type=str)
 parser.add_argument('cfg_tail', help='config file for tail of CNN', type=str)
