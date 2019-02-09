@@ -79,7 +79,7 @@ adam = tf.keras.optimizers.Adam(lr=0.02)
 model.compile(loss=tracknet_loss, optimizer=adam)
 print('Training...')
 #print('steps =', len(train_set)//batch_sz, len(val_set)//batch_sz)
-checkpointer = tf.keras.callbacks.ModelCheckpoint('model/checkpoint/' + 'weights.{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss')
+checkpointer = tf.keras.callbacks.ModelCheckpoint('model/checkpoints/' + 'weights.{epoch:02d}-{val_loss:.2f}.h5', monitor='val_loss')
 history = model.fit_generator( \
 					generator=train_gen,
 	                steps_per_epoch=len(train_set)//batch_sz,
