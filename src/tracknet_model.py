@@ -138,8 +138,8 @@ def build_model(cfg_head, cfg_tail):
 					   dtype=tf.float32, name='input_t_m1')
 	input_t    = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
 					   dtype=tf.float32, name='input_t')
-	x_t_m1 = tf.math.divide(input_t_m1, 255) #input_t_m1
-	x_t    = tf.math.divide(input_t, 255)  #input_t
+	x_t_m1 = tf.divide(input_t_m1, 255) #input_t_m1
+	x_t    = tf.divide(input_t, 255)  #input_t
 
 	# Operations from YOLO
 	t_m1_stop_layer = t_m1_ops_stop
