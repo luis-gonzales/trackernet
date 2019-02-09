@@ -128,6 +128,9 @@ def build_model(cfg_head, cfg_tail):
 	relu_alpha    = float(net['relu_alpha'])
 	learning_rate = float(net['learning_rate'])
 	adam_weight_decay = float(net['adam_weight_decay'])
+
+
+	t_m1_ops_stop = int(net['t_m1_ops_stop'])
 	
 
 	# Define inputs
@@ -135,11 +138,11 @@ def build_model(cfg_head, cfg_tail):
 					   dtype=tf.float32, name='input_t_m1')
 	input_t    = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
 					   dtype=tf.float32, name='input_t')
-	x_t_m1 = input_t_m1
-	x_t    = input_t
+	x_t_m1 = tf.math.divide(input_t_m1, 255) #input_t_m1
+	x_t    = tf.math.divide(input_t, 255)  #input_t
 
 	# Operations from YOLO
-	t_m1_stop_layer = 12
+	t_m1_stop_layer = t_m1_ops_stop
 
 	t_act_maps    = []
 	t_m1_act_maps = []

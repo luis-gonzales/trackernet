@@ -165,11 +165,11 @@ def get_feat_and_label(dict_desc):
 
 	feat_a, _ = resize_with_ar(feat_a, 96)
 	feat_a = pad_zeros(feat_a, 96)
-	feat_a = feat_a[:, :, ::-1] / 255	# RGB and normalize
+	feat_a = feat_a[:, :, ::-1] #/ 255	# RGB and normalize
 
 	feat_b, ratio_b = resize_with_ar(feat_b, 192)
 	feat_b = pad_zeros(feat_b, 192)
-	feat_b = feat_b[:, :, ::-1] / 255	# RGB and normalize
+	feat_b = feat_b[:, :, ::-1] #/ 255	# RGB and normalize
 
 	label = np.zeros((9,5), dtype=np.float32)
 
