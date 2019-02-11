@@ -6,3 +6,4 @@ src/__pycache__/
 nohup*
 yolov3.weights
 model/*.pickle
+model/checkpoints/*.h5
