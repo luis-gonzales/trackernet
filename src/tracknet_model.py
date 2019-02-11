@@ -35,17 +35,10 @@ def parse_cfg(cfg_file):
 	file.close()
 	return blocks
 
-
-class ReshapeLayer(tf.keras.layers.Layer):
-
-	def __init__(self):
-		print('in __init__')
-		super(ReshapeLayer, self).__init__()
-
-	def call(self, inputs):
-		print('in call')
-		h, w = inputs.get_shape()[1:3]
-		return tf.reshape(inputs, [-1, h*w, 5])
+def reshape(x):
+	import tensorflow as tf
+	h, w = x.get_shape()[1:3]
+	return tf.reshape(x, [-1, h*w, 5])
 
 
 def conv(x, dict_desc, bn_momentum, bn_epsilon, relu_alpha, post_name,
@@ -110,6 +103,7 @@ def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post
 
 
 def divide(x):
+	import tensorflow as tf
 	return tf.divide(x, 255)
 
 
@@ -221,11 +215,13 @@ def build_model(cfg_head, cfg_tail):
 
 
 
-	print('about to reshape')
-	x = ReshapeLayer()(x)
-	print(x)
-	print('reshape done')
+	#x = ReshapeLayer()(x)
+	x = Lambda(reshape)(x)
+	#print(x)
 
+
+	
+	
 	return Model(inputs=[input_t_m1, input_t], outputs=x), cfg_blocks
 
 

@@ -99,5 +99,5 @@ write_pickle('model/train_loss.pickle', history.history['loss'])
 write_pickle('model/val_loss.pickle', history.history['val_loss'])
 
 
-
+model.save('my_model.h5')
 

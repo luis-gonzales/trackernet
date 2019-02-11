@@ -51,7 +51,7 @@ def sigmoid(x):
 
 def inv_sigmoid(x):
 	#print('inv_sigmoid x =', x)
-	lim = 4
+	lim = 4.5
 	if (x == 0): return -lim
 	elif (x > 0.9998) and (x < 1.0002): return lim
 	ans = np.log( x / (1-x) )
