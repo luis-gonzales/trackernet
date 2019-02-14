@@ -9,8 +9,8 @@ Run the following two commands to replicate the Conda environment used for devel
 
 A local copy of [TrackingNet](http://www.lrgonzales.com/traffic-sign-classifier) is required for training.
 
-# Training
+## Training
 To create a local
 
 
-# Inference
+## Inference
