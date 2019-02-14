@@ -129,9 +129,21 @@ def anchor_parse(vals):
 
 	return idx, (t_x, t_y, tw, th)
 
+def hsv_aug(img, hue_aug, sat_aug, min_coeff):
+	hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+
+	if hue_aug:
+		hue_coeff = np.random.uniform(low=min_coeff, high=1.0)
+		hsv[:,:,0] = hue_coeff * hsv[:,:,0]
+
+	if sat_aug:
+		sat_coeff = np.random.uniform(low=min_coeff, high=1.0)
+		hsv[:,:,1] = sat_coeff * hsv[:,:,1]
+
+	return cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
 
-def get_feat_and_label(dict_desc):
+def get_feat_and_label(dict_desc, data_aug=False):
 	# t-1: 144 x 144     96 x  96
 	# t:   288 x 288    192 x 192
 
@@ -171,12 +183,24 @@ def get_feat_and_label(dict_desc):
 	feat_b = pad_zeros(feat_b, 192)
 	feat_b = feat_b[:, :, ::-1] #/ 255	# RGB and normalize
 
-	label = np.zeros((9,5), dtype=np.float32)
-
 	#cv2.imwrite('feat_a.jpg', feat_a[:,:,::-1]*255)
 	#cv2.imwrite('feat_b.jpg', feat_b[:,:,::-1]*255)
 
+	if data_aug:
 
+		# Boolean vars
+		aug_hue_a, aug_sat_a, aug_hue_b, aug_sat_b = \
+			np.random.rand(4) > 0.5
+
+
+		if aug_sat_a or aug_hue_a:
+			feat_a = hsv_aug(feat_a, aug_hue_a, aug_sat_a, min_coeff=0.3)
+
+		if aug_sat_b or aug_hue_b:
+			feat_b = hsv_aug(feat_b, aug_hue_b, aug_sat_b, min_coeff=0.3)
+
+
+	label = np.zeros((9,5), dtype=np.float32)
 
 	if ('bbox_b' in dict_desc):
 		#print('bbox_b exists!')
@@ -235,7 +259,7 @@ def generator(gen_entries, abs_path, batch_sz):
 							 'bbox_a': entry['bbox_a'],
 							 'bbox_b': entry['bbox_b']}
 
-				X_cur, y_cur = get_feat_and_label(new_entry)
+				X_cur, y_cur = get_feat_and_label(new_entry, data_aug=True)
 				imgs1.append(X_cur[0])
 				imgs2.append(X_cur[1])
 				labels.append(y_cur)
