@@ -1,0 +1,5 @@
+{
+	"frame_a": "data/dog_1.jpg",
+	"bbox_a": [230, 171, 100, 67],
+	"frame_b": "data/dog_2.jpg"
+}

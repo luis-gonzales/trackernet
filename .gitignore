@@ -1,7 +1,5 @@
 .DS_Store
-data/*.json
-data/*.json
-data/*.json
+data/data_*.json
 src/__pycache__/
 nohup*
 yolov3.weights
