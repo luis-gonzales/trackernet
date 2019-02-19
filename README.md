@@ -1,33 +1,30 @@
 # TrackerNet
 TrackerNet performs object tracking using a regression-based convolutional neural network. Given two input frames, the CNN strives to find the desired object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
 
-
 ## Setup
 The Conda environment used for development and test can be replicated by running `conda env create -f <yml_file>` where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
 
-If one desires to perform training, the following are required:
+If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
 
 1. YOLO weights. These are used to initialize the parameters in the "head" of the CNN architecture (more on this in the Overview section).
-2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet is currently trained on a subset of the dataset, including `TRAIN_0`, `TRAIN_1`, `TRAIN_2`, and `TRAIN_3`.
+2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet is currently trained on a subset of the dataset, including TRAIN_0, TRAIN_1, TRAIN_2, and TRAIN_3.
 3. Because the CNN requires two input images per forward pass, a file is needed to manage the associations. A JSON file was used to group adjacent frames of TrackingNet.
 
 Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specific dataset used during development to `data/` (requirements 1 and 3 above).
+
+Alternatively, 
 
 ## Overview
 Below is a conceptual depiction of TrackerNet.
 Config file
 
-
 ## Model Architecture
-
-
+Description here.
 
 ## Training
-As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet TRAIN_0, during their training, `src/trackingnet_local.py` is used to create JSONs
+As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ... TRAIN_3 during their training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (e.g., `data_train_local.json`).
 
-`./init.sh` downloads frame groupings
-Local trackernet (json_local)
-
+Training can then be performed by running `python src/trackernet_train <cfg_head> <cfg_tail>` where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
 
 ## Inference
 Inference on adjacent frames can be performed using `python src/trackernet_inference.py <model_file> <json_file>`. `<model_file>` is a `.h5` saved Keras model, while `<json_file>` is a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_dog.json` and `data/inference_kid.json` for examples of a properly structured JSON file.
