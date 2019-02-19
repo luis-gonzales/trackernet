@@ -1,17 +1,27 @@
 # TrackerNet
-Object tracking using regression-based CNN. The work is motivated by .
+TrackerNet performs object tracking using a regression-based convolutional neural network. Given two input frames, the CNN strives to find the desired object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
+
 
 ## Setup
-Run the following two commands to replicate the Conda environment used for development and test and to obtain ?.
+The Conda environment used for development and test can be replicated by running `conda env create -f trackernet.yml`.
 
-```
-conda env
-./init.sh
-```
+If one desires to perform training, the following are required:
 
-If one desires to do training, a local copy of [TrackingNet](http://www.lrgonzales.com/traffic-sign-classifier) is required.
+1. YOLO weights. These are used to initialize the "head" of the CNN architecture (more on this in the Overview section).
+2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet currently only utilizes `TRAIN_0`, `TRAIN_1`, `TRAIN_2`, and `TRAIN_3` for its dataset.
+3. Because the CNN requires two inputs, a file is needed to associate adjacent frames. This was accomplished using a JSON file 
+
+Running `./init.sh` takes care of  requirements 1 and 3 above.
+
+
+## Overview
+Below is a conceptual depiction of TrackerNet.
+Config file
+
 
 ## Model Architecture
+
+
 
 ## Training
 `./init.sh` downloads frame groupings
@@ -25,6 +35,9 @@ Given the exploratory and time-constrained nature of this project, fine-tuning o
 
 Padding for detection box
 
+Anchor boxes
+
 ## References
 [1] [Learning to Track at 100 FPS with Deep Regression Networks, D. Held et al., 2016](https://arxiv.org/pdf/1604.01802.pdf)
+[2] [YOLOv3: An Incremental Improvement, J. Redmon et al., 2018](https://arxiv.org/pdf/1804.02767.pdf)
 
