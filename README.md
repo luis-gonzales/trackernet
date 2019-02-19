@@ -16,11 +16,22 @@ Alternatively,
 
 ## Overview
 Below is a conceptual depiction of TrackerNet.
+
 Config file
 
 <div align="center">
-  <img src="figs/overview_1.png" width="700">
+  <p><img src="figs/overview_1.png" width="400"></p>
+  <p>Fig. 1: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
+
+More description
+
+<div align="center">
+  <p><img src="figs/overview_1.png" width="400"></p>
+  <p>Fig. 1: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
+</div>
+
+Final description
 
 ## Model Architecture
 Description here.
