@@ -7,7 +7,7 @@ The Conda environment used for development and test can be replicated by running
 If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
 
 1. YOLO weights. These are used to initialize the parameters in the "head" of the CNN architecture (more on this in the Overview section).
-2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet is currently trained on a subset of the dataset, including TRAIN_0, TRAIN_1, TRAIN_2, and TRAIN_3.
+2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet is currently trained on a subset of the dataset, including TRAIN_0, TRAIN_1, TRAIN_2, and TRAIN_3. Describe skip every 5
 3. Because the CNN requires two input images per forward pass, a file is needed to manage the associations. A JSON file was used to group adjacent frames of TrackingNet.
 
 Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specific dataset used during development to `data/` (requirements 1 and 3 above).
@@ -27,7 +27,7 @@ As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `dat
 Training can then be performed by running `python src/trackernet_train <cfg_head> <cfg_tail>` where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
 
 ## Inference
-Inference on adjacent frames can be performed using `python src/trackernet_inference.py <model_file> <json_file>`. `<model_file>` is a `.h5` saved Keras model, while `<json_file>` is a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_dog.json` and `data/inference_kid.json` for examples of a properly structured JSON file.
+Inference can be performed using `python src/trackernet_inference.py <model_file> <json_file>`. `<model_file>` is a saved Keras model with a `.h5` extension, and `<json_file>` is a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the formatting that is required.
 
 ## Improvements
 Given the exploratory and time-constrained nature of this project, fine-tuning of hyperparameters and model architecture is pending. The "head" of the CNN architecture is probably okay with being the first several layers of a pretrained model. However, the "tail" of the CNN is . In addition, hyperparameter tuning could lead to improved performance.
