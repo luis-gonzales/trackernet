@@ -27,8 +27,8 @@ Config file
 More description
 
 <div align="center">
-  <p><img src="figs/overview_1.png" width="400"></p>
-  <p>Fig. 1: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
+  <p><img src="figs/overview_2.png" width="400"></p>
+  <p>Fig. 2: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
 Final description
