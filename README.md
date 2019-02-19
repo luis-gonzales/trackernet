@@ -30,16 +30,16 @@ Training can then be performed by running `python src/trackernet_train <cfg_head
 Inference can be performed by running `python src/trackernet_inference.py <model_file> <json_file>`. `<model_file>` is expected to be a `.h5` saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the required formatting.
 
 ## Improvements
-Given the exploratory and time-constrained nature of this project, fine-tuning of hyperparameters and model architecture is incomplete. As far as the CNN "head", it's not immediately clear what spatial resolution is optimal before      The "head" of the CNN architecture is probably okay with being the first several layers of a pretrained model. However, the "tail" of the CNN is . In addition, hyperparameter tuning could lead to improved performance.
+Given the exploratory and time-constrained nature of this project, fine-tuning of hyperparameters and the model architecture is pending. As far as the CNN "head", it's not immediately clear what spatial resolution is optimal before the concatenation operation. The current model uses a 1-by-1 kernel immediately after concatenation to compress the depth of the resultant tensor; this could prove to be a bottleneck. Similarly, the specific operations comprising the "tail" of the CNN need to be optimized.
 
-TrackingNet is made up of a wide range of objects and corresponding geometries, including humans, dogs, canoes, elephants, and more. The notion of anchor boxes has    Anchor box and scale
+TrackingNet is made up of a wide range of objects and corresponding geometries, including humans, dogs, canoes, elephants, and more. When faced with varying object geometries, recent object detectors have resorted to using appropriately-sized anchor boxes. Correspondingly, it's expected that TrackerNet performance would be improved with appropriately-sized anchors. Presently, TrackerNet simply uses a fixed 96-by-96 anchor box.
 
-Training data
+The training data for the current model was created by grouping every fifth (every ~0.17 sec) from of TrackingNet. The motivation was that this . Improvements may be attainable by curating a dataset that specifically includes occlusions, lighting changes, etc         training data
 
 Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may mitigate any loss of information caused by the convolution operations along the borders.
 
-## Specific Use
-FOV mult
+## Customization
+TrackerNet was designed such that the "current" image input has a field of view that is twice that of the "previous" image input.    FOV mult
 
 ## References
 [1] [Learning to Track at 100 FPS with Deep Regression Networks, D. Held et al., 2016](https://arxiv.org/pdf/1604.01802.pdf)
