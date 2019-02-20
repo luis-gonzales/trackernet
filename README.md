@@ -1,5 +1,5 @@
 # TrackerNet
-TrackerNet performs object tracking using a regression-based convolutional neural network. Given two input frames, the CNN strives to find the desired object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
+TrackerNet performs object tracking using a regression-based convolutional neural network. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
 
 ## Setup
 The Conda environment used for development and test can be obtained by running `conda env create -f <yml_file>` where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
@@ -15,14 +15,14 @@ Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specif
 Alternatively, 
 
 ## Overview
-Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and a "current" frame. Given a bounding box for the "previous" frame, the algorithm strives to find the same object in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet currently has a FO. Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
+Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the "current" input frame has twice the FOV of the cropped ???. Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
 
 <div align="center">
   <p><img src="figs/overview_1.png" width="400"></p>
   <p>Fig. 1: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
-Finally, the parameters that are outputted by the CNN correspond to the crop of the "current".
+Finally, the parameters at the output of the CNN serve as the bounding box for the object in the "current" frame if it is still present.
 
 <div align="center">
   <p><img src="figs/overview_2.png" width="400"></p>
