@@ -15,26 +15,24 @@ Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specif
 Alternatively, 
 
 ## Overview
-Below is a conceptual depiction of TrackerNet.
-
-Config file
+Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and a "current" frame. Given a bounding box for the "previous" frame, the algorithm strives to find the same object in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet currently has a FO. Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
 
 <div align="center">
   <p><img src="figs/overview_1.png" width="400"></p>
   <p>Fig. 1: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
-More description
+Finally, the parameters that are outputted by the CNN correspond to the crop of the "current".
 
 <div align="center">
   <p><img src="figs/overview_2.png" width="400"></p>
   <p>Fig. 2: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
-Final description
-
 ## Model Architecture
 Description here.
+
+Config file
 
 ## Training
 As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ..., TRAIN_3 for training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (outputting, for example, `data_train_local.json`). This also gives a user the opportunity to specify the absolute path to their local copy of TrackingNet. Run `python src/trackingnet_local.py <abs_path>` where `<abs_path>` is the absolute path to the TrackingNet directory.
