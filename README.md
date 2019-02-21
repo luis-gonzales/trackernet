@@ -32,6 +32,11 @@ Finally, the parameters at the output of the CNN describe the bounding box for t
 ## Model Architecture
 Description here.
 
+<div align="center">
+  <p><img src="figs/cnn.png" width="400"></p>
+  <p>Fig. 3: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
+</div>
+
 Config file
 
 ## Training
