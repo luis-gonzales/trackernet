@@ -18,7 +18,7 @@ Alternatively,
 Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the "current" input frame has twice the FOV of the cropped image represented by Fig. 1(c). Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
 
 <div align="center">
-  <p><img src="figs/overview_1.png" width="400"></p>
+  <p><img src="figs/overview_1.png" width="450"></p>
   <p>Fig. 1: Given two input frames, the images represented <br/>by (c) and (d) are passed as inputs to the CNN.</p>
 </div>
 
@@ -30,10 +30,10 @@ Finally, the parameters at the output of the CNN describe the bounding box for t
 </div>
 
 ## Model Architecture
-Description here.
+The TrackerNet architecture is shown in Fig. 3. The "head" is defined by the operations prior to the concatenation operation and . Conversely, the tail 
 
 <div align="center">
-  <p><img src="figs/cnn.png" width="400"></p>
+  <p><img src="figs/cnn.png" width="550"></p>
   <p>Fig. 3: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
