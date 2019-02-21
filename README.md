@@ -60,6 +60,8 @@ The training data presently used was created by grouping every fifth frame (ever
 
 Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may mitigate any loss of information at the image borders caused by the convolution operations.
 
+## Results
+
 ## Customization
 TrackerNet was designed such that the "current" image input has a field of view (FOV) that is twice that of the "previous" image input. Certain applications may benefit from a different FOV multiple. For instance, applications in which FPS rates are particularly low, the FOV multiple may need to be increased. Note that due to the nature of convolution operations, it's most convenient for the FOV multiple to be a multiple of 2.
 
@@ -67,4 +69,5 @@ TrackerNet was designed such that the "current" image input has a field of view 
 [1] [Learning to Track at 100 FPS with Deep Regression Networks, D. Held et al., 2016](https://arxiv.org/pdf/1604.01802.pdf)
 
 [2] [YOLOv3: An Incremental Improvement, J. Redmon et al., 2018](https://arxiv.org/pdf/1804.02767.pdf)
+
 
