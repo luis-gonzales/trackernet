@@ -59,7 +59,8 @@ where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/head.cfg` and 
 
 ## Inference
 Inference can be performed by running
-```python src/trackernet_inference.py <model_file> <json_file>
+```
+python src/trackernet_inference.py <model_file> <json_file>
 ```.
 `<model_file>` is expected to be a .h5 saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the required formatting.
 
