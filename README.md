@@ -3,7 +3,13 @@ TrackerNet performs object tracking using a novel, regression-based convolutiona
 
 ## Setup
 The Conda environment used for development and test can be obtained by running
+```
+conda env create -f <yml_file>
+```
+
 `conda env create -f <yml_file>`
+
+
 where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
 
 If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
