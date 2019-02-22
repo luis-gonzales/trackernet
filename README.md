@@ -1,5 +1,5 @@
 # TrackerNet
-TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in applications constrained to low frame rates. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
+TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in applications constrained to low frame rates. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2]. A short presentation can be found at [bitly.com/tracker-net](bitly.com/tracker-net)
 
 ## Setup
 The Conda environment used for development and test can be obtained by running
@@ -19,7 +19,7 @@ Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specif
 Alternatively, 
 
 ## Overview
-Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the "current" input frame has twice the FOV of the cropped image represented by Fig. 1(c). Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
+Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the subset of the "current" frame has twice the FOV of the cropped image represented by Fig. 1(c). Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
 
 <div align="center">
   <p><img src="figs/overview_1.png" width="550"></p>
@@ -54,11 +54,14 @@ Training can then be performed by running
 ```
 python src/trackernet_train.py <cfg_head> <cfg_tail>
 ```
-where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
+where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/head.cfg` and `cfg/tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
 
 
 ## Inference
-Inference can be performed by running `python src/trackernet_inference.py <model_file> <json_file>`. `<model_file>` is expected to be a .h5 saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the required formatting.
+Inference can be performed by running
+```python src/trackernet_inference.py <model_file> <json_file>
+```.
+`<model_file>` is expected to be a .h5 saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the required formatting.
 
 ## Improvements
 Given the exploratory and time-constrained nature of this project, fine-tuning of hyperparameters and the model architecture is pending. As far as the CNN "head", it's not immediately clear at what spatial resolution concatenation should occur. Moreover, the current model uses a 1-by-1 kernel immediately after concatenation to compress the depth of the resultant tensor; this could prove to be a bottleneck but is a convenient way to reduce the number of learnable parameters. Similarly, the specific operations comprising the "tail" of the CNN need to be optimized.
