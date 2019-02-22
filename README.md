@@ -1,5 +1,5 @@
 # TrackerNet
-TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in low frame rate applications. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
+TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in applications constrained to low frame rates. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
 
 ## Setup
 The Conda environment used for development and test can be obtained by running
@@ -30,7 +30,7 @@ Finally, the parameters at the output of the CNN describe the bounding box for t
 
 <div align="center">
   <p><img src="figs/overview_2.png" width="400"></p>
-  <p>Fig. 2: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
+  <p>Fig. 2: Output of CNN describes the bounding box<br/>for the desired object in the "current" frame.</p>
 </div>
 
 ## Model Architecture
@@ -38,7 +38,7 @@ The TrackerNet architecture is shown in Fig. 3. The "head" is defined by the ope
 
 <div align="center">
   <p><img src="figs/cnn.png" width="700"></p>
-  <p>Fig. 3: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
+  <p>Fig. 3: Custom, regression-based CNN architecture.</p>
 </div>
 
 Config file
@@ -70,6 +70,19 @@ The training data presently used was created by grouping every fifth frame (ever
 Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may mitigate any loss of information at the image borders caused by the convolution operations.
 
 ## Results
+Below are preliminary results of the trained model. Despite rotation of the skateboarder, the model is able to detect it to the extent that the ground truth 
+
+<div align="center">
+  <p><img src="figs/result_1.png" width="550"></p>
+  <p>Fig. 4: Skateboarder is tracked despite considerable rotation.</p>
+</div>
+
+In the image below, note that the elephant has progressed considerably through the capture and is occluded by a human. The model
+
+<div align="center">
+  <p><img src="figs/result_2.png" width="550"></p>
+  <p>Fig. 4: Elephant is tracked despite occlusion.</p>
+</div>
 
 ## Customization
 TrackerNet was designed such that the "current" image input has a field of view (FOV) that is twice that of the "previous" image input. Certain applications may benefit from a different FOV multiple. For instance, applications in which FPS rates are particularly low, the FOV multiple may need to be increased. Note that due to the nature of convolution operations, it's most convenient for the FOV multiple to be a multiple of 2.
