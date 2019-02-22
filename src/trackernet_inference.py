@@ -67,7 +67,7 @@ max_conf = float(confs[obj_row])
 
 
 # If high enough confidence, draw rectangle on second frame
-if max_conf > 0.8:
+if max_conf > 0.5:
 
 	# Convert from CNN output to (top-left x, top-left y, width, height) w.r.t. `feat_b`
 	x, y, w, h = preds_to_bbox(bboxes[obj_row], obj_row)
@@ -87,5 +87,9 @@ if max_conf > 0.8:
 
 	# Read in second frame, draw appropriate rectangle, and save image
 	out_img = cv2.imread(input_data['frame_b'])
-	cv2.rectangle(out_img, (xx, yy), (xx+ww, yy+hh), (0,255,255), thickness=2)
-	cv2.imwrite(json_file[:-4] + 'jpg', out_img)
+	thickness = round( max(out_img.shape[:2]) * 0.0065 )
+	cv2.rectangle(out_img, (xx, yy), (xx+ww, yy+hh), (0,255,255), thickness=thickness)
+	cv2.imwrite(input_data['frame_b'][:-4] + '_inference.jpg', out_img)
+
+else:
+	print('Object not found in second frame!')

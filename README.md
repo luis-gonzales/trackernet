@@ -74,7 +74,7 @@ The training data presently used was created by grouping every fifth frame (ever
 Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may reduce loss of information at the image borders caused by the convolution operations.
 
 ## Results
-Below are preliminary results of the trained model. Note that despite rotation of the skateboarder, the model is able to track it.
+Below are preliminary results. Note that despite rotation of the skateboarder, the model is able to track it.
 
 <div align="center">
   <p><img src="figs/result_1.png" width="650"></p>

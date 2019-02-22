@@ -5,7 +5,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Lambda
 
 
-
 def parse_cfg(cfg_file):
 	'''
 	Store each layer as a dict
@@ -88,18 +87,7 @@ def conv(x, dict_desc, bn_momentum, bn_epsilon, relu_alpha, post_name,
 
 	return x
 
-'''
-def conv_object(dict_desc, prev_depth, bn_momentum, bn_epsilon, relu_alpha, post_name,
-				conv_trainable=True, bn_trainable=True):
 
-	inp = Input(shape=(None,None,prev_depth), dtype=tf.float32, name='input'+post_name)
-	x = inp
-
-	x = conv(x, dict_desc, bn_momentum=bn_momentum, bn_epsilon=bn_epsilon,
-			 relu_alpha=relu_alpha, post_name=post_name)
-
-	return Model(inputs=inp, outputs=x, name='conv_obj'+post_name)
-'''
 
 
 def divide(x):
@@ -130,13 +118,12 @@ def build_model(cfg_head, cfg_tail):
 	t_m1_ops_stop = int(net['t_m1_ops_stop'])
 	
 
-	# Define inputs
+	# Define inputs and normalize [0,255] -> [0.0, 1.0]
 	input_t_m1 = Input(shape=(det_height, det_width, 3),
 					   dtype=tf.float32, name='input_t_m1')
 	input_t    = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
 					   dtype=tf.float32, name='input_t')
-	#x_t_m1 = input_t_m1 #tf.divide(input_t_m1, 255) #
-	#x_t    = input_t # tf.divide(input_t, 255)  #
+
 	x_t_m1 = Lambda(divide)(input_t_m1)
 	x_t   = Lambda(divide)(input_t)
 

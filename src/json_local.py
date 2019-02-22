@@ -45,9 +45,11 @@ def full_path(json_file, abs_path):
 	out = [abs_path, out_entries]
 
 	# Write
-	out_file = open(json_file[:-5] + '_local.json', 'w')
+	new_file = json_file[:-5] + '_local.json'
+	out_file = open(new_file, 'w')
 	json.dump(out, out_file)
 	out_file.close()
+	print('# of samples in', new_file, '\t', len(out_entries))
 
 full_path('data/data_train.json', abs_path)
 full_path('data/data_val.json', abs_path)
