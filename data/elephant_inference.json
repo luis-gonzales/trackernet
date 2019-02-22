@@ -1,0 +1,5 @@
+{
+	"frame_a": "data/elephant_1.jpg",
+	"bbox_a": [562,195,360,374],
+	"frame_b": "data/elephant_2.jpg"
+}
