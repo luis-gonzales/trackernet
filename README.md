@@ -6,10 +6,6 @@ The Conda environment used for development and test can be obtained by running
 ```
 conda env create -f <yml_file>
 ```
-
-`conda env create -f <yml_file>`
-
-
 where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
 
 If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
@@ -49,11 +45,15 @@ Config file
 
 ## Training
 As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ..., TRAIN_3 for training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (outputting, for example, `data_train_local.json`). This also gives a user the opportunity to specify the absolute path to their local copy of TrackingNet. Run
-`python src/trackingnet_local.py <abs_path>`
+```
+python src/trackingnet_local.py <abs_path>
+```
 where `<abs_path>` is the absolute path to the TrackingNet directory.
 
 Training can then be performed by running
-`python src/trackernet_train.py <cfg_head> <cfg_tail>`
+```
+python src/trackernet_train.py <cfg_head> <cfg_tail>
+```
 where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
 
 
