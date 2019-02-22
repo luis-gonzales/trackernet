@@ -1,5 +1,5 @@
 # TrackerNet
-TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in applications constrained to low frame rates. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2]. A short presentation can be found at [bitly.com/tracker-net](bitly.com/tracker-net)
+TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in applications constrained to low frame rates. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2]. A short presentation can be found at [bit.ly/tracker-net](bit.ly/tracker-net).
 
 ## Setup
 The Conda environment used for development and test can be obtained by running
@@ -60,36 +60,36 @@ where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/head.cfg` and 
 ## Inference
 Inference can be performed by running
 ```
-python src/trackernet_inference.py <model_file> <json_file>.
+python src/trackernet_inference.py <model_file> <json_file>
 ```
-`<model_file>` is expected to be a .h5 saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/inference_elephant_*.json` and `data/inference_skater.json` for examples of the required formatting.
+`<model_file>` is expected to be a .h5 saved Keras model, and `<json_file>` must be a JSON file that contains paths to two images and a bounding box for the object to track from the first image. See `data/elephant_inference.json` and `data/skater_inference.json` for examples of the expected formatting.
 
 ## Improvements
 Given the exploratory and time-constrained nature of this project, fine-tuning of hyperparameters and the model architecture is pending. As far as the CNN "head", it's not immediately clear at what spatial resolution concatenation should occur. Moreover, the current model uses a 1-by-1 kernel immediately after concatenation to compress the depth of the resultant tensor; this could prove to be a bottleneck but is a convenient way to reduce the number of learnable parameters. Similarly, the specific operations comprising the "tail" of the CNN need to be optimized.
 
 TrackingNet is made up of a wide range of objects and corresponding geometries, including humans, dogs, canoes, elephants, emergency vehicles, and more. When faced with varying object geometries, recent object detectors have resorted to using appropriately-sized anchor boxes. Correspondingly, it's expected that TrackerNet performance would be improved with appropriately-sized anchors. Presently, TrackerNet simply uses a fixed 96-by-96 anchor box.
 
-The training data presently used was created by grouping every fifth frame (every ~0.17 sec) in TrackingNet. The motivation was that grouping consecutive frames would create too small of a change between the "previous" and "current" frame and sampling more sparsely could result in objects outside of the FOV of the "current" frame. Improvements may be attainable by curating a dataset that specifically includes occlusions, lighting changes, etc, rather than the somewhat arbitrary grouping used presently.
+The training data presently used was created by grouping every fifth frame (every ~0.17 sec) in TrackingNet. The motivation was that grouping consecutive frames would result in minimal variation between the "previous" and "current" frame. Conversely, sampling more sparsely could result in objects outside of the FOV of the "current" frame. Improvements may be attainable by curating a dataset that specifically includes occlusions, lighting changes, etc, rather than the somewhat arbitrary grouping used presently.
 
-Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may mitigate any loss of information at the image borders caused by the convolution operations.
+Finally, when cropping the "previous" image, it may be beneficial to include slightly more pixels than the crop obtained by directly using the corresponding bounding box. Doing so may reduce loss of information at the image borders caused by the convolution operations.
 
 ## Results
-Below are preliminary results of the trained model. Despite rotation of the skateboarder, the model is able to detect it to the extent that the ground truth 
+Below are preliminary results of the trained model. Note that despite rotation of the skateboarder, the model is able to track it.
 
 <div align="center">
   <p><img src="figs/result_1.png" width="650"></p>
   <p>Fig. 4: Skateboarder is tracked despite considerable rotation.</p>
 </div>
 
-In the image below, note that the elephant has progressed considerably through the capture and is occluded by a human. The model
+In the image below, note that the elephant has progressed considerably through the capture and is occluded by a human. Despite this, the model continues to be able to track it.
 
 <div align="center">
   <p><img src="figs/result_2.png" width="650"></p>
-  <p>Fig. 5: Elephant is tracked despite occlusion.</p>
+  <p>Fig. 5: Elephant is tracked despite occlusion and rotation.</p>
 </div>
 
 ## Customization
-TrackerNet was designed such that the "current" image input has a field of view (FOV) that is twice that of the "previous" image input. Certain applications may benefit from a different FOV multiple. For instance, applications in which FPS rates are particularly low, the FOV multiple may need to be increased. Note that due to the nature of convolution operations, it's most convenient for the FOV multiple to be a multiple of 2.
+TrackerNet was designed such that the "current" image input crop has a FOV that is twice that of the "previous" image input crop. Certain applications may benefit from a different FOV multiple. For instance, applications in which FPS rates are extremely low or objects move quickly, the FOV multiple may need to be increased. Note that due to the nature of convolution operations, it's most convenient for the FOV multiple to be a multiple of 2.
 
 ## References
 [1] [Learning to Track at 100 FPS with Deep Regression Networks, D. Held et al., 2016](https://arxiv.org/pdf/1604.01802.pdf)
