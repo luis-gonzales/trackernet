@@ -73,15 +73,15 @@ Finally, when cropping the "previous" image, it may be beneficial to include sli
 Below are preliminary results of the trained model. Despite rotation of the skateboarder, the model is able to detect it to the extent that the ground truth 
 
 <div align="center">
-  <p><img src="figs/result_1.png" width="550"></p>
+  <p><img src="figs/result_1.png" width="650"></p>
   <p>Fig. 4: Skateboarder is tracked despite considerable rotation.</p>
 </div>
 
 In the image below, note that the elephant has progressed considerably through the capture and is occluded by a human. The model
 
 <div align="center">
-  <p><img src="figs/result_2.png" width="550"></p>
-  <p>Fig. 4: Elephant is tracked despite occlusion.</p>
+  <p><img src="figs/result_2.png" width="650"></p>
+  <p>Fig. 5: Elephant is tracked despite occlusion.</p>
 </div>
 
 ## Customization
