@@ -1,0 +1,9 @@
+name: trackernet
+dependencies:
+    - python==3.5.6
+    - numpy==1.15.2
+    - matplotlib==3.0.0
+    - opencv==3.4.2
+    - scikit-learn==0.20.0
+    - pip:
+        - tensorflow==1.11.0
