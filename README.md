@@ -1,8 +1,10 @@
 # TrackerNet
-TrackerNet performs object tracking using a regression-based convolutional neural network. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
+TrackerNet performs object tracking using a novel, regression-based convolutional neural network and was designed to be performant even in low frame rate applications. Given two input frames, the CNN searches for a specified object from the "previous" frame in the "current" frame. The custom CNN architecture is inspired by GOTURN object tracking [1] and YOLO object detection [2].
 
 ## Setup
-The Conda environment used for development and test can be obtained by running `conda env create -f <yml_file>` where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
+The Conda environment used for development and test can be obtained by running
+`conda env create -f <yml_file>`
+where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
 
 If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
 
@@ -33,19 +35,20 @@ Finally, the parameters at the output of the CNN describe the bounding box for t
 The TrackerNet architecture is shown in Fig. 3. The "head" is defined by the operations prior to the concatenation operation and . Conversely, the tail 
 
 <div align="center">
-  <p><img src="figs/cnn.png" width="550"></p>
+  <p><img src="figs/cnn.png" width="600"></p>
   <p>Fig. 3: Image on which detection is to be performed with <br/>depiction of region to be analyzed by the image classifier.</p>
 </div>
 
 Config file
 
 ## Training
-As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ..., TRAIN_3 for training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (outputting, for example, `data_train_local.json`). This also gives a user the opportunity to specify the absolute path to their local copy of TrackingNet. Run `python src/trackingnet_local.py <abs_path>` where `<abs_path>` is the absolute path to the TrackingNet directory.
+As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ..., TRAIN_3 for training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (outputting, for example, `data_train_local.json`). This also gives a user the opportunity to specify the absolute path to their local copy of TrackingNet. Run
+`python src/trackingnet_local.py <abs_path>`
+where `<abs_path>` is the absolute path to the TrackingNet directory.
 
-Training can then be performed by running `python src/trackernet_train.py <cfg_head> <cfg_tail>` where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
-
-Below are the training and validation loss for the current model.
-
+Training can then be performed by running
+`python src/trackernet_train.py <cfg_head> <cfg_tail>`
+where `<cfg_head>` and `<cfg_tail>` are text files (refer to `cfg/trackernet_head.cfg` and `cfg/trackernet_tail.cfg`). Note that `<cfg_head>` is expected to contain the model hyperparameters. Checkpoints are saved to the `model/checkpoints` directory.
 
 
 ## Inference
@@ -69,5 +72,4 @@ TrackerNet was designed such that the "current" image input has a field of view 
 [1] [Learning to Track at 100 FPS with Deep Regression Networks, D. Held et al., 2016](https://arxiv.org/pdf/1604.01802.pdf)
 
 [2] [YOLOv3: An Incremental Improvement, J. Redmon et al., 2018](https://arxiv.org/pdf/1804.02767.pdf)
-
 
