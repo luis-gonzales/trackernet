@@ -7,3 +7,4 @@ dependencies:
     - scikit-learn==0.20.0
     - pip:
         - tensorflow==1.11.0
+        - gdown
