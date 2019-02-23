@@ -24,7 +24,7 @@ def get_data(file):
 train_loss = get_data(train_file) # type = list
 val_loss   = get_data(val_file)
 train_loss = train_loss[:16]
-val_loss = val_loss[:16]
+val_loss   = val_loss[:16]
 print('train_loss =\n', train_loss)
 print('val_loss =\n', val_loss)
 
@@ -67,4 +67,4 @@ plt.xticks([2, 4, 6, 8, 10, 12, 14, 16])
 
 plt.gca().legend(['Train', 'Validation'], fontsize=legend_fsize)
 
-plt.savefig('learning-curves.png', bbox_inches='tight', dpi=300, transparent=True)
+plt.savefig('model/loss_curves.png', bbox_inches='tight', dpi=300, transparent=True)
