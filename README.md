@@ -34,14 +34,14 @@ Finally, the parameters at the output of the CNN describe the bounding box for t
 </div>
 
 ## Model Architecture
-The TrackerNet architecture is shown in Fig. 3. The "head" is defined by the operations prior to the concatenation operation and . Conversely, the tail 
+The TrackerNet architecture is shown in Fig. 3. Features are obtained for each of the two input images and are then concatenated along the depth. Once concatenated, a 1-by-1 kernel is used to compress the resultant depth in order to lower the number of model parameters. The remaining convolutional operations serve to compress the spatial resolution to a 3-by-3 tensor. This 3-by-3 corresponds to overlaying a 3-by-3 grid on the "current" frame crop, similar to the approach used in YOLO. 
 
 <div align="center">
   <p><img src="figs/cnn.png" width="700"></p>
-  <p>Fig. 3: Custom, regression-based CNN architecture.</p>
+  <p>Fig. 3: Custom, regression-based CNN architecture for object tracking.</p>
 </div>
 
-Config file
+The architecture is split between a "head" and a "tail", separated by the concatenating operation shown in Fig. 3. The "head" of the architecture refers to the operations that occur between the input images and the depth-wise concatenation, whereas the "tail" refers to the operations that take the concatenated tensor to the final 3-by-3 tensor. The specific operations are defined in `cfg/head.cfg` and `cfg/tail.cfg`.
 
 ## Training
 As mentioned in the Setup section, `./init.sh` downloads `data_train.json`, `data_val.json`, and `data_test.json` to `data/`. Because a user may not require all of TrackingNet's TRAIN_0, ..., TRAIN_3 for training, `src/trackingnet_local.py` is used to create JSONs that correspond to the user's local copy of TrackingNet (outputting, for example, `data_train_local.json`). This also gives a user the opportunity to specify the absolute path to their local copy of TrackingNet. Run
