@@ -8,15 +8,32 @@ conda env create -f <yml_file>
 ```
 where `<yml_file>` is either `trackernet.yml` or `trackernet-gpu.yml`.
 
-If one desires to perform training, the following are required:  Instead, describe what `./init.sh` downloads (change due to model having to go on Google Drive.
+Two shell scripts, which download large files from public sources, are included in the repository. If one only desires to run inference, run
+```
+./init_inference.sh
+```
+
+Doing so downloads the saved Keras model, `tracker net.h5`.
+
+If one desires to perform training, run
+```
+./init_train.sh
+```
+
+This downloads:
+1. YOLO ; and
+2. TrackerNet
+
+A local copy. The scripts, , in the repo are such written such that a subset -- -- of TrackingNet is acceptable. In fact, the saved model was trained on TRAIN_0, ..., TRAIN_3.
+
+
+
 
 1. YOLO weights. These are used to initialize the parameters in the "head" of the CNN architecture (more on this in the Overview section).
 2. [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset. The entire dataset is not required. In fact, TrackerNet is currently trained on a subset of the dataset, including TRAIN_0, TRAIN_1, TRAIN_2, and TRAIN_3. Describe skip every 5
 3. Because the CNN requires two input images per forward pass, a file is needed to manage the associations. A JSON file was used to group adjacent frames of TrackingNet.
 
 Running `./init.sh` downloads (a) open-source YOLO parameters and (b) the specific dataset used during development to `data/` (requirements 1 and 3 above).
-
-Alternatively, 
 
 ## Overview
 Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the subset of the "current" frame has twice the FOV of the cropped image represented by Fig. 1(c). Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
