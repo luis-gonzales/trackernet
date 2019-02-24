@@ -22,9 +22,9 @@ If one desires to perform training, run
 
 This downloads:
 1. YOLOv3 weights, which are used in the first several layers of TrackerNet (transfer learning); and
-2. `data_train.json`, `data_val.json`, and `data_test.json`, which is the specific dataset that TrackerNet was trained on. The JSONs group neighboring frames of the TrackingNet dataset, given that the CNN requires two input images per forward pass.
+2. `data_train.json`, `data_val.json`, and `data_test.json`, which is the specific dataset that TrackerNet was trained on (assumes local copy of TrackingNet, see below). The JSONs group neighboring frames of the TrackingNet dataset, given that the CNN requires two input images per forward pass.
 
-The saved Keras model was trained on the [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset, so it's probably worth downloading it and testing the training pipeline with it before considering a different dataset. Downloading a subset of the TrackingNet is OK; in fact, the saved model was trained on only on TRAIN_0, ..., TRAIN_3.
+The saved Keras model was trained on the [TrackingNet](https://github.com/SilvioGiancola/TrackingNet-devkit) dataset, so it's probably worth downloading it to test the training pipeline before considering a different dataset. Downloading a subset of the TrackingNet is OK; in fact, the saved model was trained on only on TRAIN_0, ..., TRAIN_3.
 
 ## Overview
 Figs. 1 and 2 show a conceptual depiction of TrackerNet. As shown in Fig. 1, tracking is performed on a "previous" and "current" frame. Given an object specified in the "previous" frame by a bounding box, the algorithm searches for it in the "current" frame. Rather than looking at the entirety of the "current" frame for the desired object, a preprocessing step retrieves a subset of the frame with an increased field of view (FOV). TrackerNet is currently implemented such that the subset of the "current" frame has twice the FOV of the cropped image represented by Fig. 1(c). Ultimately, the images represented by Fig. 1(c) and 1(d) are passed as inputs to the CNN.
