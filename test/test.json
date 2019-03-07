@@ -1,0 +1,6 @@
+{
+	"frame_a": "/Users/luisgonzales/Insight/Project/TrackingNet-devkit/TrackingNet/TRAIN_0/frames/a3In51YCqMg_0/0.jpg",
+	"frame_b": "/Users/luisgonzales/Insight/Project/TrackingNet-devkit/TrackingNet/TRAIN_0/frames/a3In51YCqMg_0/15.jpg",
+	"bbox_a": [229,177,102,61],
+	"bbox_b": [178,157,97,60]
+}
