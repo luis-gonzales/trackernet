@@ -4,32 +4,12 @@ import argparse
 import numpy as np
 import tensorflow as tf
 
-from helpers import sigmoid
-from tracknet_loss import tracknet_loss
 from generator import get_feat_and_label
+from helpers import sigmoid, preds_to_bbox
+from trackernet_loss import trackernet_loss
 
 
-def preds_to_bbox(t_bbox, obj_row):
-	# Convert CNN output to (top-left x, top-left y, width, height)
-
-	tx, ty, tw, th = t_bbox
-
-	cx, cy = (obj_row % 3), (obj_row // 3)	# offsets in [0, 1, 2]
-
-	bx = 64 * (sigmoid(tx) + cx)
-	by = 64 * (sigmoid(ty) + cx)
-	bw = 96 * np.exp(tw)
-	bh = 96 * np.exp(th)
-	
-	x = int(round(bx - bw/2))
-	y = int(round(by - bh/2))
-	w = int(round(bw))
-	h = int(round(bh))
-
-	return x, y, w, h
-
-
-# Grab model and JSON file
+# Parse for CNN model and JSON file
 parser = argparse.ArgumentParser()
 parser.add_argument('model_file', help='saved model file (.h5)', type=str)
 parser.add_argument('json_file', help='json file with adjacent frame association', type=str)
@@ -40,14 +20,14 @@ json_file  = args.json_file
 
 
 # Load model, data to perform inference on
-model = tf.keras.models.load_model(model_file, custom_objects={'tracknet_loss': tracknet_loss})
+model = tf.keras.models.load_model(model_file, custom_objects={'tracknet_loss': trackernet_loss})
 
 file = open(json_file, mode='r')
 input_data = json.load(file)
 file.close()
 
 
-# Transform input JSON to usable input to CNN
+# Transform input data to usable input to CNN
 [feat_a, feat_b], _ = get_feat_and_label(input_data)
 feat_a = np.expand_dims(feat_a, axis=0)
 feat_b = np.expand_dims(feat_b, axis=0)
@@ -70,14 +50,14 @@ max_conf = float(confs[obj_row])
 if max_conf > 0.5:
 
 	# Convert from CNN output to (top-left x, top-left y, width, height) w.r.t. `feat_b`
-	x, y, w, h = preds_to_bbox(bboxes[obj_row], obj_row)
+	x, y, w, h = preds_to_bbox(bboxes[obj_row], obj_row, grid_sz=64, anchor_sz=96)
 
 	# Parameters corresponding to `bbox_a`
 	x_a, y_a, w_a, h_a = input_data['bbox_a']
 
 	center_x_a, center_y_a = x_a + w_a/2, y_a + h_a/2
 	max_dim   = max(w_a, h_a)
-	img_ratio = 2*max_dim/192	# FOV and `feat_a` shape used
+	img_ratio = 2*max_dim/192	# FOV and `feat_b` shape used
 
 	# Transform (x,y,w,h) w.r.t. `feat_b` to (xx,yy,ww,hh) w.r.t. second frame
 	xx = round(x*img_ratio + center_x_a - max_dim)

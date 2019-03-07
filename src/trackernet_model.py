@@ -34,10 +34,11 @@ def parse_cfg(cfg_file):
 	file.close()
 	return blocks
 
+
 def reshape(x):
 	import tensorflow as tf
 	h, w = x.get_shape()[1:3]
-	return tf.reshape(x, [-1, h*w, 5])
+	return tf.reshape(x, [-1, h*w, 5])	# Force to 5 columns
 
 
 def conv(x, dict_desc, bn_momentum, bn_epsilon, relu_alpha, post_name,
@@ -88,130 +89,101 @@ def conv(x, dict_desc, bn_momentum, bn_epsilon, relu_alpha, post_name,
 	return x
 
 
-
-
 def divide(x):
 	import tensorflow as tf
-	return tf.divide(x, 255)
-
-
+	return tf.divide(x, 255)	# [0,255] -> [0.0, 1.0]
 
 
 def build_model(cfg_head, cfg_tail):
+	print('Building model...')
 
-	cfg_blocks = parse_cfg(cfg_head)
-	#print('cfg_blocks =\n', cfg_blocks)
-	net = cfg_blocks[0]
-
-
-	# Hyperparams
-	det_width     = int(net['det_width'])
-	det_height    = int(net['det_height'])
-	fov_mult      = int(net['fov_mult'])
-	bn_momentum   = float(net['bn_momentum'])
-	bn_epsilon    = float(net['bn_epsilon'])
-	relu_alpha    = float(net['relu_alpha'])
-	learning_rate = float(net['learning_rate'])
-	adam_weight_decay = float(net['adam_weight_decay'])
-
-
-	t_m1_ops_stop = int(net['t_m1_ops_stop'])
+	head_blocks = parse_cfg(cfg_head)
 	
+
+	# Parse hyperparams
+	net_info = head_blocks[0]
+	
+	det_width     = int(net_info['det_width'])
+	det_height    = int(net_info['det_height'])
+	fov_mult      = int(net_info['fov_mult'])
+	bn_momentum   = float(net_info['bn_momentum'])
+	bn_epsilon    = float(net_info['bn_epsilon'])
+	relu_alpha    = float(net_info['relu_alpha'])
+	learning_rate = float(net_info['learning_rate'])
+	adam_weight_decay = float(net_info['adam_weight_decay'])
+
+	prev_ops_stop = int(net_info['prev_ops_stop'])	# Layer from head at which to stop ops for `prev` frame
+
 
 	# Define inputs and normalize [0,255] -> [0.0, 1.0]
-	input_t_m1 = Input(shape=(det_height, det_width, 3),
-					   dtype=tf.float32, name='input_t_m1')
-	input_t    = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
-					   dtype=tf.float32, name='input_t')
+	input_prev = Input(shape=(det_height, det_width, 3),
+					   dtype=tf.float32, name='input_prev')
+	input_cur  = Input(shape=(fov_mult*det_height, fov_mult*det_width, 3),
+					   dtype=tf.float32, name='input_cur')
 
-	x_t_m1 = Lambda(divide)(input_t_m1)
-	x_t   = Lambda(divide)(input_t)
+	x_prev = Lambda(divide)(input_prev)
+	x_cur  = Lambda(divide)(input_cur)
 
-	# Operations from YOLO
-	t_m1_stop_layer = t_m1_ops_stop
 
-	t_act_maps    = []
-	t_m1_act_maps = []
-
-	for idx, layer in enumerate(cfg_blocks[1:]):
-		print('-------\nLayer:', idx)
-		print('layer[type] =', layer['type'])
+	# Build "head" of CNN
+	prev_act_maps = []
+	cur_act_maps  = []
+	for idx, layer in enumerate(head_blocks[1:]):
+		#print('-------\nLayer:', idx)
+		#print('layer[type] =', layer['type'])
 
 		if layer['type'] == 'convolutional':
-			x_t = conv(x_t, layer, bn_momentum=bn_momentum,
-					   bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-					   post_name='_t_' + str(idx), conv_trainable=False, bn_trainable=False)
-			#print('x_t:', x_t)
+			x_cur = conv(x_cur, layer, bn_momentum=bn_momentum,
+					     bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
+					     post_name='_cur_' + str(idx), conv_trainable=False, bn_trainable=False)
 			
-			if idx < t_m1_stop_layer:
-				x_t_m1 = conv(x_t_m1, layer, bn_momentum=bn_momentum,
+			if idx < prev_ops_stop:
+				x_prev = conv(x_prev, layer, bn_momentum=bn_momentum,
 						  	  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-							  post_name='_t_m1_' + str(idx), conv_trainable=False, bn_trainable=False)
-				#print('x_t-1:', x_t_m1)
+							  post_name='_prev_' + str(idx), conv_trainable=False, bn_trainable=False)
 
 		elif layer['type'] == 'shortcut':
-			shortcut_name = 'res_t_' + str(idx)
+			shortcut_name = 'res_cur_' + str(idx)
 			from_ = int(layer['from'])
-			x_t = tf.keras.layers.add([x_t, t_act_maps[from_]], name=shortcut_name)
-			#print('x_t:', x_t)
+			x_cur = tf.keras.layers.add([x_cur, cur_act_maps[from_]], name=shortcut_name)
 
-			if idx < t_m1_stop_layer:
-				shortcut_name = 'res_t_m1_' + str(idx)
-				from_ = int(layer['from'])
-				x_t_m1 = tf.keras.layers.add([x_t_m1, t_m1_act_maps[from_]], name=shortcut_name)
-				#print('x_t-1:', x_t_m1)
+			if idx < prev_ops_stop:
+				shortcut_name = 'res_prev_' + str(idx)
+				x_prev = tf.keras.layers.add([x_prev, prev_act_maps[from_]], name=shortcut_name)
 
-		t_m1_act_maps.append(x_t_m1)
-		t_act_maps.append(x_t)
+		prev_act_maps.append(x_prev)
+		cur_act_maps.append(x_cur)
 
 
+	# Concatenate before building "tail"
+	x = tf.keras.layers.concatenate([x_prev, x_cur])	# [?, 3, 3, 1536]
 
 
-	cfg_blocks_last = parse_cfg(cfg_tail)
-	
-
-	
-	
-	# Merge and perform final convolutions
-	print('\n\nOperations for merge:')
-	x = tf.keras.layers.concatenate([x_t_m1, x_t])	# [?, 3, 3, 1536]
-	print(x)
-
-	print('cfg_blocks_last =', cfg_blocks_last)
-
+	# Build "tail" of CNN
 	x_act_maps = []
-	for idx, layer in enumerate(cfg_blocks_last):
-		print('-------\nLayer:', idx)
-		print('layer[type] =', layer['type'])
+	tail_blocks = parse_cfg(cfg_tail)
+	for idx, layer in enumerate(tail_blocks):
+		#print('-------\nLayer:', idx)
+		#print('layer[type] =', layer['type'])
 
 		if layer['type'] == 'convolutional':
 			x = conv(x, layer, bn_momentum=bn_momentum,
-						  bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
-						  post_name='_x_' + str(idx))
-			print(x)
+					 bn_epsilon=bn_epsilon, relu_alpha=relu_alpha,
+					 post_name='_x_' + str(idx))
 
 		elif layer['type'] == 'shortcut':
 			shortcut_name = 'res_x_' + str(idx)
 			from_ = int(layer['from'])
 			x = tf.keras.layers.add([x, x_act_maps[from_]], name=shortcut_name)
-			print(x)
 
 		x_act_maps.append(x)
-	print('---')
 
 
-
-
-	#x = ReshapeLayer()(x)
+	# Reshape 3 x 3 x 5 into 9 x 5
 	x = Lambda(reshape)(x)
-	#print(x)
-
-
 	
-	
-	return Model(inputs=[input_t_m1, input_t], outputs=x), cfg_blocks
-
-
+	print('Done!')
+	return Model(inputs=[input_prev, input_cur], outputs=x), head_blocks
 
 
 def load_weights(weights_file, model, blocks):
@@ -222,19 +194,16 @@ def load_weights(weights_file, model, blocks):
 	header = np.fromfile(file, dtype=np.int32, count=5)
 
 	for idx, layer in enumerate(blocks):
-		#print('layer info:', idx, layer)
+		#print('-------\nLayer:', idx)
+		#print('layer[type] =', layer['type'])
 
+		# Load weights (conv kernels and BN params) for convolutional layers
 		if layer['type'] == 'convolutional':
-			#print('in conv')
-
-			#print( model.get_layer('conv_t_0').get_weights )
-			#print( type(model.get_layer('conv_t_0').get_weights()) )
-			#print( len(model.get_layer('conv_t_0').get_weights()) )
-			conv_name = 'conv_t_' + str(idx)
+			
+			conv_name = 'conv_cur_' + str(idx)
 
 			bias_weights = []
 			size, _, channels, filters = model.get_layer(conv_name).get_weights()[0].shape
-			#print(size, channels, filters)
 
 			if ('batch_normalize' in layer):
 				betas        = np.fromfile(file, dtype=np.float32, count=filters)
@@ -242,11 +211,11 @@ def load_weights(weights_file, model, blocks):
 				moving_means = np.fromfile(file, dtype=np.float32, count=filters)
 				moving_vars  = np.fromfile(file, dtype=np.float32, count=filters)
 
-				bn_name = 'bn_t_' + str(idx)
+				bn_name = 'bn_cur_' + str(idx)
 				model.get_layer(bn_name).set_weights([gammas, betas, moving_means, moving_vars])
 
 				if idx < 12:
-					bn_name_2 = 'bn_t_m1_' + str(idx)
+					bn_name_2 = 'bn_prev_' + str(idx)
 					model.get_layer(bn_name_2).set_weights([gammas, betas, moving_means, moving_vars])
 
 			else:
@@ -254,9 +223,6 @@ def load_weights(weights_file, model, blocks):
 				bias_weights.append(biases)
 
 			conv_weights = np.fromfile(file, dtype=np.float32, count=size*size*channels*filters)
-				
-			#conv_weights = np.reshape(conv_weights, [filters, channels, size, size])
-			#conv_weights = [np.transpose(conv_weights, (2,3,1,0))]
 
 			conv_weights = np.reshape(conv_weights, newshape=(-1,filters), order='F')
 			conv_weights = np.reshape(conv_weights, newshape=(-1, channels, filters), order='F')
@@ -265,11 +231,9 @@ def load_weights(weights_file, model, blocks):
 			model.get_layer(conv_name).set_weights(conv_weights + bias_weights)
 
 			if idx < 12:
-				conv_name_2 = 'conv_t_m1_' + str(idx)
+				conv_name_2 = 'conv_prev_' + str(idx)
 				model.get_layer(conv_name_2).set_weights(conv_weights + bias_weights)
 
 	file.close()
 	print('Done!')
 	return model
-
-

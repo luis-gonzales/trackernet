@@ -1,7 +1,6 @@
 import tensorflow as tf
 
-def tracknet_loss(y_true, y_pred):	
-
+def trackernet_loss(y_true, y_pred):	
 
 	# Separate objectness from bounding box params
 	y_true_conf, y_true_bbox = tf.split(y_true, [1, 4], axis=2)

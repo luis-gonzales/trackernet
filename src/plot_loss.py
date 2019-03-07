@@ -4,29 +4,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# Parse command-line inputs
-parser = argparse.ArgumentParser()
-parser.add_argument('train_loss', help='pickle file to training loss', type=str)
-parser.add_argument('val_loss', help='pickle file to validation loss', type=str)
-args = parser.parse_args()
-
-train_file = args.train_loss	# e.g., data/file.pickle
-val_file   = args.val_loss
-
-
-# Load data
 def get_data(file):
 	infile = open(file, mode='rb')
 	data = pickle.load(infile)
 	infile.close()
 	return data
 
-train_loss = get_data(train_file) # type = list
+
+# Parse command-line inputs
+parser = argparse.ArgumentParser()
+parser.add_argument('train_loss', help='pickle file to training loss', type=str)
+parser.add_argument('val_loss', help='pickle file to validation loss', type=str)
+args = parser.parse_args()
+
+train_file = args.train_loss
+val_file   = args.val_loss
+
+
+# Load data
+train_loss = get_data(train_file)
 val_loss   = get_data(val_file)
 train_loss = train_loss[:16]
 val_loss   = val_loss[:16]
-print('train_loss =\n', train_loss)
-print('val_loss =\n', val_loss)
+
 
 # Plot data
 epochs = np.arange(1, len(train_loss)+1)
@@ -35,16 +35,13 @@ plt.plot(epochs, train_loss)
 plt.plot(epochs, val_loss)
 
 
-# Configure
+# Customize
 axis_fsize = 18
 legend_fsize = 18
 tick_fsize = 18
 
-
 plt.xlabel('Epochs', fontsize=axis_fsize)
 plt.ylabel('Loss', fontsize=axis_fsize)
-
-#plt.xticks(epochs)
 
 plt.gca().set_xlim([1, len(epochs)])
 plt.gca().set_ylim([0, 1.5])
