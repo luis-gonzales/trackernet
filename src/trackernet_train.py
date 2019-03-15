@@ -55,6 +55,7 @@ val_gen   = generator(val_set, abs_path, batch_sz=batch_sz)
 print('Number of training examples:\t', len(train_set))
 print('Number of validation examples:\t', len(val_set))
 print('Batch size =', batch_sz)
+print('Learning rate =', learning_rate)
 
 
 # Perform training
