@@ -75,60 +75,42 @@ def in_img(img_dims, bbox, min_pix=3):
 
 
 def anchor_parse(vals):
-	# vals is tuple w/ (x, y, w, h)
-	#print('--- in anchor_parse ---')
-	if not in_img((192,192), vals):
-		#print('outside of 192 x 192 crop')
+
+	prev_sz, cur_sz = 96, 192
+	
+	if not in_img((cur_sz,cur_sz), vals):
 		return -1, (0,0,0,0)
 
 	x, y, w, h = vals
-	#print(x,y,w,h)
-
-	#in_frame = (y < 192) and (x < 192) and (x+w > 0) and (y+h > 0)
-	##print('in_frame =', in_frame)
-
-	#if not in_frame:
 		
-
-	if y+h > 192:
-		h = 192 - y
-	if x+w > 192:
-		w = 192 - x
+	# Handle extremes
+	if y+h > cur_sz:
+		h = cur_sz - y
+	if x+w > cur_sz:
+		w = cur_sz - x
 	if x < 0:
-		w = w + x
+		#w += x
 		x = 0
 	if y < 0:
-		h = h + y
+		#h += y
 		y = 0
-	#print('new bbox =', x, y, w, h)
 
 	center_x, center_y = round(x + w/2), round(y + h/2)
 
-	#if center_y > 192: center_y = 192
-
-	#print('center =', center_x, center_y)
-
-	x_idx, y_idx = center_x // 64, center_y // 64
-	##print('idx =', x_idx, y_idx)
+	x_idx, y_idx = center_x // (cur_sz//3), center_y // (cur_sz//3)
 
 	idx = 3*y_idx + x_idx
-	
 
-	b_x = (center_x % 64) / 64
-	b_y = (center_y % 64) / 64
-	#print('b_x, b_y =', b_x, b_y)
-
+	# Normalize in [0.0, 1.0] and map to CNN parameter
+	b_x = (center_x % (cur_sz/3)) / (cur_sz/3)
+	b_y = (center_y % (cur_sz/3)) / (cur_sz/3)
 	t_x = inv_sigmoid(b_x)
 	t_y = inv_sigmoid(b_y)
 
-	#print('b_x, b_y =', b_x, b_y)
-	#print('t_x, t_y =', t_x, t_y)
-	#print('recovered =', sigmoid(t_x), sigmoid(t_y))
-
-	tw = np.log(w/96)
-	th = np.log(h/96)
-
-	#print('recovered w and h =', 144*np.exp(tw), 144*np.exp(th))
+	# Map to CNN parameter given fixed anchor box
+	anchor_sz = 96	# square
+	tw = np.log(w/anchor_sz)
+	th = np.log(h/anchor_sz)
 
 	return idx, (t_x, t_y, tw, th)
 
@@ -149,43 +131,57 @@ def hsv_aug(img, hue_aug, sat_aug, min_coeff):
 
 
 def get_feat_and_label(dict_desc, data_aug=False):
-	# prev: 144 x 144     96 x  96
-	# cur:  288 x 288    192 x 192
-	
+	'''
+	Load images and create ground-truth label based on dict_desc,
+	which is expected to contain:
+		'frame_a': path to the "previous" frame
+		'frame_b': path to the "current" frame
+		'bbox_a': bounding box for object of interest in `frame_a` in the
+				  form of (top-left x, top-left y, w, h)
+		'bbox_b': similar to `bbox_a` but for `frame_b`; if omitted, it's
+				  assumed that object of interest has left the scene
 
+	First iteration of TrackerNet fixes the "previous" crop to 96 x 96
+	and the "current" crop to 192 x 192
+	'''
+
+	prev_sz, cur_sz = 96, 192
+
+	# Image slicing for "previous" frame
 	img_a = cv2.imread(dict_desc['frame_a'])
 
-	tl_x_a, tl_y_a, w_a, h_a = dict_desc['bbox_a']
+	x_a, y_a, w_a, h_a = dict_desc['bbox_a']	# x, y correspond to top-left coord
 	
-	if tl_x_a < 0:
-		w_a = w_a + tl_x_a
-		tl_x_a = 0
-	if tl_y_a < 0:
-		h_a = h_a + tl_y_a
-		tl_y_a = 0
-	if tl_y_a + h_a > img_a.shape[0]:
-		h_a = img_a.shape[0] - tl_y_a
-	if tl_x_a+w_a > img_a.shape[1]:
-		w_a = img_a.shape[1] - tl_x_a
+	# Handle edge bases
+	if x_a < 0:
+		w_a = w_a + x_a
+		x_a = 0
+	if y_a < 0:
+		h_a = h_a + y_a
+		y_a = 0
+	if y_a + h_a > img_a.shape[0]:
+		h_a = img_a.shape[0] - y_a
+	if x_a+w_a > img_a.shape[1]:
+		w_a = img_a.shape[1] - x_a
 
-	feat_a = img_a[tl_y_a : tl_y_a+h_a, tl_x_a : tl_x_a+w_a, :]
-
-
-	img_b = cv2.imread(dict_desc['frame_b'])
-	feat_b, (x_orig, y_orig) = extract_mult(img_b, dict_desc['bbox_a'], mult=2)
-	
-
-	feat_a, _ = resize_with_ar(feat_a, 96)
-	feat_a = pad_zeros(feat_a, 96)
+	# Extract crop, resize, and pad
+	feat_a = img_a[y_a : y_a+h_a, x_a : x_a+w_a, :]
+	feat_a, _ = resize_with_ar(feat_a, prev_sz)
+	feat_a = pad_zeros(feat_a, prev_sz)
 	feat_a = feat_a[:, :, ::-1] # RGB
 
-	feat_b, ratio_b = resize_with_ar(feat_b, 192)
-	feat_b = pad_zeros(feat_b, 192)
+
+	# Image slicing for "current" frame (extract, resize, and pad)
+	img_b = cv2.imread(dict_desc['frame_b'])
+	feat_b, (x_orig, y_orig) = extract_mult(img_b, dict_desc['bbox_a'], mult=2)
+	feat_b, ratio_b = resize_with_ar(feat_b, cur_sz)
+	feat_b = pad_zeros(feat_b, cur_sz)
 	feat_b = feat_b[:, :, ::-1]	# RGB
 
 
+	# Data augmentation
 	if data_aug:
-		# Boolean vars
+		
 		aug_hue_a, aug_sat_a, aug_hue_b, aug_sat_b = \
 			np.random.rand(4) > 0.5
 
@@ -196,17 +192,18 @@ def get_feat_and_label(dict_desc, data_aug=False):
 			feat_b = hsv_aug(feat_b, aug_hue_b, aug_sat_b, min_coeff=0.3)
 
 
-	# Create
+	# Create ground-truth label
 	label = np.zeros((9,5), dtype=np.float32)
 	if ('bbox_b' in dict_desc):
 		x_b, y_b, w_b, h_b = dict_desc['bbox_b']
 
+		# Re-scale coords for "current" frame crop
 		x = round((x_b - x_orig)*ratio_b)
 		y = round((y_b - y_orig)*ratio_b)
 		w, h = round(w_b*ratio_b), round(h_b*ratio_b)
-		#print('new bbox', x, y, w, h)
 
-		idx, vals = anchor_parse((x, y, w, h))
+		idx, vals = anchor_parse((x, y, w, h))	# map to CNN parameters
+		print('idx =', idx)
 
 		if idx != -1:
 			label[idx, 0] = 1.0
